@@ -21,10 +21,11 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Cross Origin Resource Sharing (production safe setup)
+const corsOrigin = config.security.corsOrigin;
 const corsOptions = {
-  origin: config.env === 'production' 
-    ? [config.clientUrl || 'https://yourproductionfrontend.com'] // should ideally be from config
-    : 'http://localhost:5173', // Vite default, or whatever local port you use
+  origin: typeof corsOrigin === 'string' && corsOrigin.includes(',')
+    ? corsOrigin.split(',').map(origin => origin.trim())
+    : corsOrigin,
   credentials: true, // allow cookies
 };
 app.use(cors(corsOptions));
