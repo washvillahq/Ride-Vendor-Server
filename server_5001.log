@@ -1,0 +1,144 @@
+﻿MongoDB Connected: ac-fff64hb-shard-00-00.q4jvlce.mongodb.net
+Listening to port 5001 in development mode
+[0mPOST /api/v1/auth/register [32m201[0m 1206.765 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 756.082 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 848.770 ms - 564[0m
+--- CONVERTING ERROR ---
+Type: JsonWebTokenError
+Is Mongoose Error: false
+[0mGET /api/v1/auth/me [31m500[0m 7.702 ms - 987[0m
+[0mPOST /api/v1/auth/register [32m201[0m 887.905 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 2864.227 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 701.811 ms - 564[0m
+--- CONVERTING ERROR ---
+Type: JsonWebTokenError
+Is Mongoose Error: false
+[0mGET /api/v1/auth/me [31m500[0m 10.112 ms - 987[0m
+[0mPOST /api/v1/auth/register [32m201[0m 859.666 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 744.953 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 848.721 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 193.898 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 451.422 ms - 635[0m
+--- VALIDATION ERROR ---
+Object: {
+  "body": {
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2023,
+    "type": "sedan",
+    "pricePerDay": 50,
+    "description": "A nice test car",
+    "seats": 5,
+    "transmission": "automatic",
+    "fuelType": "petrol",
+    "licensePlate": "TEST-1774174642003"
+  }
+}
+Message: "body.title" is required, "body.brand" is required, "body.category" is required, "body.type" must be one of [rental, sale], "body.location" is required, "body.images" is required
+[0mPOST /api/v1/cars [33m400[0m 2168.403 ms - 1622[0m
+[0mPOST /api/v1/auth/register [32m201[0m 755.422 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 796.306 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 849.069 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 2326.879 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 456.382 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 436.152 ms - 606[0m
+[0mPOST /api/v1/auth/register [32m201[0m 777.216 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 789.449 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 707.126 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 159.902 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 3228.309 ms - 635[0m
+[0mPOST /api/v1/auth/register [32m201[0m 874.264 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 899.976 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 3712.997 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 365.248 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 599.118 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 402.033 ms - 606[0m
+[0mGET /api/v1/cars [32m200[0m 503.174 ms - 1240[0m
+[0mGET /api/v1/cars/69bfc25fd476ab08dcfba51e [32m200[0m 200.867 ms - 608[0m
+--- VALIDATION ERROR ---
+Object: {
+  "body": {
+    "name": "Test Service 1774174816859",
+    "description": "A test service",
+    "price": 100,
+    "category": "maintenance",
+    "duration": 60
+  }
+}
+Message: "body.pricePerDay" is required, "body.applicableTo" is required
+[0mPOST /api/v1/services [33m400[0m 302.124 ms - 1376[0m
+[0mPOST /api/v1/auth/register [32m201[0m 759.306 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 824.798 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 794.513 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 158.569 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 323.277 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 417.151 ms - 606[0m
+[0mGET /api/v1/cars [32m200[0m 408.133 ms - 1240[0m
+[0mGET /api/v1/cars/69bfc2abd476ab08dcfba534 [32m200[0m 198.747 ms - 608[0m
+[0mPOST /api/v1/services [32m201[0m 362.560 ms - 299[0m
+[0mGET /api/v1/services [32m200[0m 444.070 ms - 399[0m
+[0mGET /api/v1/services/69bfc2acd476ab08dcfba53e [32m200[0m 146.311 ms - 301[0m
+[0mPOST /api/v1/bookings [32m201[0m 1117.255 ms - 601[0m
+[0mGET /api/v1/bookings/check-availability?carId=69bfc2abd476ab08dcfba534&startDate=2026-03-23T10:21:33.090Z&endDate=2026-03-24T10:21:33.107Z [32m200[0m 151.661 ms - 93[0m
+[0mPOST /api/v1/orders [33m400[0m 442.168 ms - 429[0m
+[0mPOST /api/v1/auth/register [32m201[0m 688.799 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 722.019 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 707.830 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 188.898 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 292.357 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 416.957 ms - 606[0m
+[0mGET /api/v1/cars [32m200[0m 600.707 ms - 1240[0m
+[0mGET /api/v1/cars/69bfc2cad476ab08dcfba55b [32m200[0m 236.473 ms - 608[0m
+[0mPOST /api/v1/services [32m201[0m 368.907 ms - 299[0m
+[0mGET /api/v1/services [32m200[0m 301.479 ms - 399[0m
+[0mGET /api/v1/services/69bfc2ccd476ab08dcfba565 [32m200[0m 149.884 ms - 301[0m
+[0mPOST /api/v1/bookings [32m201[0m 976.635 ms - 601[0m
+[0mGET /api/v1/bookings/check-availability?carId=69bfc2cad476ab08dcfba55b&startDate=2026-03-23T10:22:04.844Z&endDate=2026-03-24T10:22:04.846Z [32m200[0m 179.352 ms - 93[0m
+[0mPOST /api/v1/cars [32m201[0m 402.368 ms - 621[0m
+[0mPOST /api/v1/orders [32m201[0m 814.695 ms - 345[0m
+[0mGET /api/v1/orders [32m200[0m 1012.466 ms - 786[0m
+--- VALIDATION ERROR ---
+Object: {
+  "body": {
+    "bookingId": "69bfc2cdd476ab08dcfba56f"
+  }
+}
+Message: "body.type" is required, "body.relatedId" is required
+[0mPOST /api/v1/payments/initialize [33m400[0m 304.577 ms - 1301[0m
+[0mPOST /api/v1/auth/register [32m201[0m 801.303 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 879.071 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 2105.127 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 1242.072 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 376.643 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 636.514 ms - 606[0m
+[0mGET /api/v1/cars [32m200[0m 401.236 ms - 1240[0m
+[0mGET /api/v1/cars/69bfc302d476ab08dcfba590 [32m200[0m 250.542 ms - 608[0m
+[0mPOST /api/v1/services [32m201[0m 437.756 ms - 299[0m
+[0mGET /api/v1/services [32m200[0m 506.416 ms - 399[0m
+[0mGET /api/v1/services/69bfc304d476ab08dcfba59a [32m200[0m 199.903 ms - 301[0m
+[0mPOST /api/v1/bookings [32m201[0m 877.267 ms - 601[0m
+[0mGET /api/v1/bookings/check-availability?carId=69bfc302d476ab08dcfba590&startDate=2026-03-23T10:23:01.102Z&endDate=2026-03-24T10:23:01.103Z [32m200[0m 157.013 ms - 93[0m
+[0mPOST /api/v1/cars [32m201[0m 381.148 ms - 621[0m
+[0mPOST /api/v1/orders [32m201[0m 918.648 ms - 345[0m
+[0mGET /api/v1/orders [32m200[0m 7379.168 ms - 786[0m
+[0mPOST /api/v1/payments/initialize [32m200[0m 1942.564 ms - 238[0m
+[0mPOST /api/v1/auth/register [32m201[0m 969.040 ms - 549[0m
+[0mPOST /api/v1/auth/register [32m201[0m 897.296 ms - 549[0m
+[0mPOST /api/v1/auth/login [32m200[0m 821.145 ms - 564[0m
+[0mGET /api/v1/auth/me [32m200[0m 179.973 ms - 385[0m
+[0mGET /api/v1/admin/users [32m200[0m 1726.929 ms - 635[0m
+[0mPOST /api/v1/cars [32m201[0m 1440.222 ms - 606[0m
+[0mGET /api/v1/cars [32m200[0m 336.510 ms - 1240[0m
+[0mGET /api/v1/cars/69bfc33fd476ab08dcfba5c9 [32m200[0m 167.400 ms - 608[0m
+[0mPOST /api/v1/services [32m201[0m 401.625 ms - 299[0m
+[0mGET /api/v1/services [32m200[0m 329.415 ms - 399[0m
+[0mGET /api/v1/services/69bfc340d476ab08dcfba5d3 [32m200[0m 167.188 ms - 301[0m
+[0mPOST /api/v1/bookings [32m201[0m 3480.540 ms - 601[0m
+[0mGET /api/v1/bookings/check-availability?carId=69bfc33fd476ab08dcfba5c9&startDate=2026-03-23T10:24:01.625Z&endDate=2026-03-24T10:24:01.628Z [32m200[0m 509.083 ms - 93[0m
+[0mPOST /api/v1/cars [32m201[0m 364.135 ms - 621[0m
+[0mPOST /api/v1/orders [32m201[0m 703.663 ms - 345[0m
+[0mGET /api/v1/orders [32m200[0m 719.552 ms - 786[0m
+[0mPOST /api/v1/payments/initialize [32m200[0m 1835.496 ms - 238[0m
+[0mGET /api/v1/cars [32m200[0m 444.118 ms - 7263[0m
+[0mGET /api/v1/services [32m200[0m 370.446 ms - 2378[0m
+[0mGET /api/v1/services [32m200[0m 369.658 ms - 2378[0m

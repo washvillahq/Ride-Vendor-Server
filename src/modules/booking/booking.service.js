@@ -1,0 +1,181 @@
+const Booking = require('./booking.model');
+const Car = require('../car/car.model');
+const serviceService = require('../service/service.service');
+const QueryBuilder = require('../../shared/utils/QueryBuilder');
+const AppError = require('../../shared/utils/appError');
+const { CAR_CATEGORIES, CAR_STATUS, BOOKING_STATUS } = require('../../shared/constants');
+const { calculateTotalDays, checkDateOverlap } = require('../../shared/utils/helpers');
+
+/**
+ * Check if a car is available for a given date range
+ * @param {ObjectId} carId 
+ * @param {Date} startDate 
+ * @param {Date} endDate 
+ * @returns {Promise<boolean>}
+ */
+const isCarAvailable = async (carId, startDate, endDate) => {
+  // Find only bookings that block availability
+  const existingBookings = await Booking.find({
+    car: carId,
+    status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
+  }).select('startDate endDate');
+
+  const ranges = existingBookings.map((b) => ({ start: b.startDate, end: b.endDate }));
+  
+  // returns true if overlap, so we negate it for "is available"
+  return !checkDateOverlap(startDate, endDate, ranges);
+};
+
+/**
+ * Get comprehensive car availability schedule for frontend calendar mapping
+ */
+const getCarAvailabilitySchedule = async (carId) => {
+  const car = await Car.findById(carId);
+  if (!car) throw new AppError(404, 'Car not found');
+
+  // If sale car, availability is just based on status
+  if (car.type === CAR_CATEGORIES.SALE) {
+    return {
+      carId: car._id,
+      carType: car.type,
+      currentStatus: car.status,
+      unavailableRanges: [],
+      isAvailableNow: car.status === CAR_STATUS.AVAILABLE,
+    };
+  }
+
+  // If rental car, get active blocking bookings
+  const blockingBookings = await Booking.find({
+    car: carId,
+    status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
+    endDate: { $gte: new Date() } // Only care about current/future blocks
+  }).select('startDate endDate');
+
+  const unavailableRanges = blockingBookings.map(b => ({
+    startDate: b.startDate,
+    endDate: b.endDate
+  }));
+
+  // Check if available right now (meaning today is not inside an unavailable range)
+  const now = new Date();
+  const isAvailableNow = car.status === CAR_STATUS.AVAILABLE && !unavailableRanges.some(
+    range => now >= range.startDate && now <= range.endDate
+  );
+
+  return {
+    carId: car._id,
+    carType: car.type,
+    currentStatus: car.status,
+    unavailableRanges,
+    isAvailableNow,
+  };
+};
+
+/**
+ * Create a new booking
+ * @param {Object} bookingData ({ user, carId, startDate, endDate, services: [] })
+ */
+const createBooking = async (bookingData) => {
+  const { user, carId, startDate, endDate, services: requestedServices } = bookingData;
+
+  // 1. Validate Car exists, is rental, and is active
+  const car = await Car.findById(carId);
+  if (!car) throw new AppError(404, 'Car not found');
+  if (car.type !== CAR_CATEGORIES.RENTAL) throw new AppError(400, 'This car is for sale, not rental');
+  if (car.status === CAR_STATUS.MAINTENANCE || car.status === CAR_STATUS.SOLD || car.status === CAR_STATUS.UNAVAILABLE) {
+    throw new AppError(400, `Car is currently ${car.status} and cannot be booked`);
+  }
+
+  // 2. Date Overlap Validation
+  const available = await isCarAvailable(carId, startDate, endDate);
+  if (!available) {
+    throw new AppError(400, 'Car is already booked during these dates');
+  }
+
+  // 3. Process Services & Calculate Total Price
+  const totalDays = calculateTotalDays(startDate, endDate);
+  let finalServicePricePerDay = 0;
+  let finalServicesArray = [];
+
+  if (requestedServices && requestedServices.length > 0) {
+    const serviceCalc = await serviceService.validateServicesAndCalculatePrice(requestedServices, car.category);
+    finalServicePricePerDay = serviceCalc.totalServicePricePerDay;
+    finalServicesArray = serviceCalc.processedServices;
+  }
+
+  const basePricePerDay = car.pricePerDay;
+  const totalPrice = (basePricePerDay + finalServicePricePerDay) * totalDays;
+
+  // 4. Create Booking
+  const booking = await Booking.create({
+    user,
+    car: carId,
+    services: finalServicesArray,
+    startDate,
+    endDate,
+    totalDays,
+    totalPrice,
+  });
+
+  return booking;
+};
+
+/**
+ * Get all bookings with filtering and pagination
+ */
+const queryBookings = async (queryParams) => {
+  const bookingsQuery = new QueryBuilder(Booking.find().populate('car', 'title brand images').populate('user', 'name email'), queryParams)
+    .filter()
+    .sort()
+    .select()
+    .paginate();
+
+  const bookings = await bookingsQuery.modelQuery;
+  
+  const countQuery = new QueryBuilder(Booking.find(), queryParams).filter();
+  const total = await countQuery.modelQuery.countDocuments();
+
+  return { bookings, total };
+};
+
+/**
+ * Cancel a booking safely
+ */
+const cancelBooking = async (bookingId, userId, userRole) => {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) throw new AppError(404, 'Booking not found');
+
+  // Verify ownership if not admin
+  if (userRole !== 'admin' && booking.user.toString() !== userId.toString()) {
+    throw new AppError(403, 'You are not authorized to cancel this booking');
+  }
+
+  // Cannot cancel completed or already cancelled
+  if ([BOOKING_STATUS.COMPLETED, BOOKING_STATUS.CANCELLED].includes(booking.status)) {
+    throw new AppError(400, `Cannot cancel a booking that is ${booking.status}`);
+  }
+
+  // In a real app with payments, we might trigger a refund checkout hit here before cancelling.
+  booking.status = BOOKING_STATUS.CANCELLED;
+  await booking.save();
+  return booking;
+};
+
+const updateBookingStatus = async (bookingId, status) => {
+  const booking = await Booking.findByIdAndUpdate(
+    bookingId, 
+    { $set: { status } },
+    { new: true, runValidators: true }
+  );
+  if (!booking) throw new AppError(404, 'Booking not found');
+  return booking;
+};
+
+module.exports = {
+  createBooking,
+  isCarAvailable,
+  queryBookings,
+  cancelBooking,
+  updateBookingStatus,
+  getCarAvailabilitySchedule,
+};
