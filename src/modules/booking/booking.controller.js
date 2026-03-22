@@ -2,6 +2,7 @@ const bookingService = require('./booking.service');
 const catchAsync = require('../../shared/utils/catchAsync');
 const responseHelper = require('../../shared/utils/response');
 const { calculatePagination } = require('../../shared/utils/helpers');
+const paymentService = require('../payment/payment.service');
 
 const createBooking = catchAsync(async (req, res) => {
   const bookingData = {
@@ -9,7 +10,23 @@ const createBooking = catchAsync(async (req, res) => {
     ...req.body
   };
   const booking = await bookingService.createBooking(bookingData);
-  responseHelper(res, 201, 'Booking successful', booking);
+  
+  // Automatically initialize payment for new bookings
+  let paymentUrl;
+  try {
+    const paymentData = await paymentService.initializePayment(
+      req.user._id, 
+      req.user.email, 
+      'booking', 
+      booking._id
+    );
+    paymentUrl = paymentData.authorization_url;
+  } catch (err) {
+    console.error('Payment initialization failed during booking creation:', err);
+    // We still return 201 as the booking was created successfully
+  }
+
+  responseHelper(res, 201, 'Booking successful', { ...booking.toObject(), paymentUrl });
 });
 
 const getBookings = catchAsync(async (req, res) => {

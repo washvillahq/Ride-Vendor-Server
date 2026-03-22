@@ -49,6 +49,18 @@ const bookingSchema = new mongoose.Schema(
     paymentReference: {
       type: String,
     },
+    pickupLocation: {
+      type: String,
+      trim: true,
+    },
+    dropoffLocation: {
+      type: String,
+      trim: true,
+    },
+    specialRequests: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

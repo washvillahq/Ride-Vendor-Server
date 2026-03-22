@@ -76,7 +76,7 @@ const getCarAvailabilitySchedule = async (carId) => {
  * @param {Object} bookingData ({ user, carId, startDate, endDate, services: [] })
  */
 const createBooking = async (bookingData) => {
-  const { user, carId, startDate, endDate, services: requestedServices } = bookingData;
+  const { user, carId, startDate, endDate, services: requestedServices, pickupLocation, dropoffLocation, specialRequests } = bookingData;
 
   // 1. Validate Car exists, is rental, and is active
   const car = await Car.findById(carId);
@@ -115,6 +115,9 @@ const createBooking = async (bookingData) => {
     endDate,
     totalDays,
     totalPrice,
+    pickupLocation,
+    dropoffLocation,
+    specialRequests,
   });
 
   return booking;

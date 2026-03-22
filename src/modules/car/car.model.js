@@ -62,6 +62,42 @@ const carSchema = new mongoose.Schema(
       enum: Object.values(CAR_STATUS),
       default: CAR_STATUS.AVAILABLE,
     },
+    mileage: {
+      type: Number,
+      min: 0,
+    },
+    engine: {
+      type: String,
+      trim: true,
+    },
+    transmission: {
+      type: String,
+      enum: ['Automatic', 'Manual', 'CVT'],
+    },
+    fuelType: {
+      type: String,
+      enum: ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'Gas'],
+    },
+    color: {
+      type: String,
+      trim: true,
+    },
+    condition: {
+      type: String,
+      trim: true,
+    },
+    seatingCapacity: {
+      type: Number,
+      min: 1,
+    },
+    doors: {
+      type: Number,
+      min: 1,
+    },
+    suitcases: {
+      type: Number,
+      min: 0,
+    },
     createdBy: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',

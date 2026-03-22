@@ -22,6 +22,15 @@ const createCar = {
     features: Joi.array().items(Joi.string()),
     images: Joi.array().items(imageSchema).min(1).required(),
     status: Joi.string().valid(...Object.values(CAR_STATUS)),
+    mileage: Joi.number().min(0),
+    engine: Joi.string(),
+    transmission: Joi.string().valid('Automatic', 'Manual', 'CVT'),
+    fuelType: Joi.string().valid('Petrol', 'Diesel', 'Hybrid', 'Electric', 'Gas'),
+    color: Joi.string(),
+    condition: Joi.string(),
+    seatingCapacity: Joi.number().min(1),
+    doors: Joi.number().min(1),
+    suitcases: Joi.number().min(0),
   }),
 };
 
@@ -65,6 +74,15 @@ const updateCar = {
       features: Joi.array().items(Joi.string()),
       images: Joi.array().items(imageSchema),
       status: Joi.string().valid(...Object.values(CAR_STATUS)),
+      mileage: Joi.number().min(0),
+      engine: Joi.string(),
+      transmission: Joi.string().valid('Automatic', 'Manual', 'CVT'),
+      fuelType: Joi.string().valid('Petrol', 'Diesel', 'Hybrid', 'Electric', 'Gas'),
+      color: Joi.string(),
+      condition: Joi.string(),
+      seatingCapacity: Joi.number().min(1),
+      doors: Joi.number().min(1),
+      suitcases: Joi.number().min(0),
     })
     .min(1),
 };
