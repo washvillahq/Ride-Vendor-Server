@@ -33,10 +33,7 @@ module.exports = {
   clientUrl: envVars?.CLIENT_URL || 'http://localhost:5173',
   mongoose: {
     url: envVars?.MONGODB_URI || 'mongodb://127.0.0.1:27017/ridevendor',
-    options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
+    options: {},
   },
   jwt: {
     secret: envVars?.JWT_SECRET || 'thisisasamplesecret',

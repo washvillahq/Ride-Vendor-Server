@@ -7,16 +7,39 @@ const CAR_TYPES = {
   SEDAN: 'Sedan',
   SUV: 'SUV',
   TRUCK: 'Truck',
-  VAN: 'Van',
   COUPE: 'Coupe',
+  VAN: 'Van',
   WAGON: 'Wagon',
   CONVERTIBLE: 'Convertible',
   SPORTS_CAR: 'Sports Car',
-  DIESEL: 'Diesel',
-  CROSSOVER: 'Crossover',
   LUXURY: 'Luxury',
+  CROSSOVER: 'Crossover',
+};
+
+const CAR_CONDITIONS = {
+  NEW: 'New',
+  TOKUNBO: 'Tokunbo',
+  LOCAL_USED: 'Local Used',
+};
+
+const SERVICE_CATEGORIES = {
+  EXECUTIVE_VIP: 'Executive & VIP',
+  WEDDING: 'Wedding Specials',
+  CORPORATE: 'Corporate',
+};
+
+const CAR_TRANSMISSIONS = {
+  AUTOMATIC: 'Automatic',
+  MANUAL: 'Manual',
+  CVT: 'CVT',
+};
+
+const CAR_FUEL_TYPES = {
+  PETROL: 'Petrol',
+  DIESEL: 'Diesel',
   HYBRID: 'Hybrid',
   ELECTRIC: 'Electric',
+  GAS: 'Gas',
 };
 
 const CAR_CATEGORIES = {
@@ -57,6 +80,10 @@ const CAR_STATUS = {
 module.exports = {
   ROLES,
   CAR_TYPES,
+  CAR_CONDITIONS,
+  SERVICE_CATEGORIES,
+  CAR_TRANSMISSIONS,
+  CAR_FUEL_TYPES,
   CAR_CATEGORIES,
   BOOKING_STATUS,
   PAYMENT_STATUS,

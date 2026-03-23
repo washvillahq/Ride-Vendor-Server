@@ -5,12 +5,8 @@ const { objectId } = require('../../shared/utils/customValidation');
 const createBooking = {
   body: Joi.object().keys({
     carId: Joi.string().custom(objectId).required(),
-    startDate: Joi.date().iso().min(new Date().setHours(0, 0, 0, 0)).required().messages({
-      'date.base': 'Please provide a valid start date',
-      'date.min': 'startDate cannot be in the past',
-    }),
-    endDate: Joi.date().iso().min(Joi.ref('startDate')).required().messages({
-      'date.min': 'endDate must be logically after startDate',
+    dates: Joi.array().items(Joi.date().iso().min(new Date().setHours(0, 0, 0, 0))).min(1).required().messages({
+      'array.min': 'Please select at least one date',
     }),
     services: Joi.array().items(Joi.string()), // array of service IDs
     pickupLocation: Joi.string(),

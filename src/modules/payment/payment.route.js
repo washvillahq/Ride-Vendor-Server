@@ -13,6 +13,7 @@ router.post('/webhook', paymentController.webhook);
 router.use(protect);
 
 router.post('/initialize', validate(paymentValidation.initializePayment), paymentController.initializePayment);
+router.post('/re-initialize', validate(paymentValidation.reInitializePayment), paymentController.reInitializePayment);
 router.post('/verify', validate(paymentValidation.verifyPayment), paymentController.verifyPayment);
 
 module.exports = router;

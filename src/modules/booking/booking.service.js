@@ -13,17 +13,37 @@ const { calculateTotalDays, checkDateOverlap } = require('../../shared/utils/hel
  * @param {Date} endDate 
  * @returns {Promise<boolean>}
  */
-const isCarAvailable = async (carId, startDate, endDate) => {
+const isCarAvailable = async (carId, dates) => {
+  // Normalize input dates to start of day
+  const normalizedRequestedDates = dates.map(d => new Date(new Date(d).setHours(0,0,0,0)).getTime());
+
   // Find only bookings that block availability
   const existingBookings = await Booking.find({
     car: carId,
     status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
-  }).select('startDate endDate');
+  }).select('startDate endDate dates');
 
-  const ranges = existingBookings.map((b) => ({ start: b.startDate, end: b.endDate }));
+  for (const booking of existingBookings) {
+    // If the existing booking has discrete dates, check individual dates
+    if (booking.dates && booking.dates.length > 0) {
+      const existingTimeMap = new Set(booking.dates.map(d => new Date(new Date(d).setHours(0,0,0,0)).getTime()));
+      if (normalizedRequestedDates.some(rd => existingTimeMap.has(rd))) {
+        return false;
+      }
+    } else {
+      // Fallback for range-based legacy bookings
+      const ranges = [{ start: booking.startDate, end: booking.endDate }];
+      if (normalizedRequestedDates.some(rd => {
+        const dTime = rd;
+        return dTime >= new Date(booking.startDate).setHours(0,0,0,0) && 
+               dTime <= new Date(booking.endDate).setHours(0,0,0,0);
+      })) {
+        return false;
+      }
+    }
+  }
   
-  // returns true if overlap, so we negate it for "is available"
-  return !checkDateOverlap(startDate, endDate, ranges);
+  return true;
 };
 
 /**
@@ -76,7 +96,7 @@ const getCarAvailabilitySchedule = async (carId) => {
  * @param {Object} bookingData ({ user, carId, startDate, endDate, services: [] })
  */
 const createBooking = async (bookingData) => {
-  const { user, carId, startDate, endDate, services: requestedServices, pickupLocation, dropoffLocation, specialRequests } = bookingData;
+  const { user, carId, dates: requestedDates, services: requestedServices, pickupLocation, dropoffLocation, specialRequests } = bookingData;
 
   // 1. Validate Car exists, is rental, and is active
   const car = await Car.findById(carId);
@@ -87,13 +107,18 @@ const createBooking = async (bookingData) => {
   }
 
   // 2. Date Overlap Validation
-  const available = await isCarAvailable(carId, startDate, endDate);
+  const available = await isCarAvailable(carId, requestedDates);
   if (!available) {
-    throw new AppError(400, 'Car is already booked during these dates');
+    throw new AppError(400, 'One or more of the selected dates are already booked');
   }
+  
+  // Sort dates to determine startDate and endDate for backward compatibility
+  const sortedDates = [...requestedDates].sort((a, b) => new Date(a) - new Date(b));
+  const startDate = sortedDates[0];
+  const endDate = sortedDates[sortedDates.length - 1];
 
   // 3. Process Services & Calculate Total Price
-  const totalDays = calculateTotalDays(startDate, endDate);
+  const totalDays = requestedDates.length;
   let finalServicePricePerDay = 0;
   let finalServicesArray = [];
 
@@ -113,6 +138,7 @@ const createBooking = async (bookingData) => {
     services: finalServicesArray,
     startDate,
     endDate,
+    dates: requestedDates,
     totalDays,
     totalPrice,
     pickupLocation,

@@ -11,8 +11,51 @@ const createCar = catchAsync(async (req, res) => {
 });
 
 const getCars = catchAsync(async (req, res) => {
-  const { cars, total } = await carService.queryCars(req.query);
-  const meta = calculatePagination(total, req.query.page || 1, req.query.limit || 10);
+  const query = { ...req.query };
+
+  // Transform frontend-friendly filters to backend-supported QueryBuilder format
+  if (query.minPrice) {
+    const priceField = query.type === 'sale' ? 'salePrice' : 'pricePerDay';
+    query[`${priceField}[gte]`] = query.minPrice;
+    delete query.minPrice;
+  }
+  if (query.maxPrice) {
+    const priceField = query.type === 'sale' ? 'salePrice' : 'pricePerDay';
+    query[`${priceField}[lte]`] = query.maxPrice;
+    delete query.maxPrice;
+  }
+  if (query.bodyType) {
+    query.category = query.bodyType;
+    delete query.bodyType;
+  }
+  if (query.transmission) {
+    if (query.transmission.toLowerCase().startsWith('auto')) {
+      query.transmission = 'Automatic';
+    }
+  }
+  if (query.minYear) {
+    query['year[gte]'] = query.minYear;
+    delete query.minYear;
+  }
+  if (query.maxYear) {
+    query['year[lte]'] = query.maxYear;
+    delete query.maxYear;
+  }
+  if (query.minMileage) {
+    query['mileage[gte]'] = query.minMileage;
+    delete query.minMileage;
+  }
+  if (query.maxMileage) {
+    query['mileage[lte]'] = query.maxMileage;
+    delete query.maxMileage;
+  }
+  if (query.minSeats) {
+    query['seatingCapacity[gte]'] = query.minSeats;
+    delete query.minSeats;
+  }
+
+  const { cars, total } = await carService.queryCars(query);
+  const meta = calculatePagination(total, query.page || 1, query.limit || 10);
   
   responseHelper(res, 200, 'Cars retrieved successfully', { pagination: meta, cars });
 });

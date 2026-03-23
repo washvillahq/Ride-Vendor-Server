@@ -17,12 +17,13 @@ const paystackClient = axios.create({
  * @param {Object} metadata Custom metadata
  * @returns {Promise<Object>} Paystack initialization response data
  */
-const initializeTransaction = async (email, amount, reference, metadata = {}) => {
+const initializeTransaction = async (email, amount, reference, metadata = {}, callback_url) => {
   const response = await paystackClient.post('/transaction/initialize', {
     email,
     amount,
     reference,
     metadata,
+    callback_url,
   });
   return response.data; // { status, message, data: { authorization_url, access_code, reference } }
 };

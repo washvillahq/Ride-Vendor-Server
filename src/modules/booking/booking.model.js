@@ -28,6 +28,12 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    dates: [
+      {
+        type: Date,
+        required: true,
+      },
+    ],
     totalDays: {
       type: Number,
       required: true,

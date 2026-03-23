@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { CAR_TYPES, CAR_CATEGORIES, CAR_STATUS } = require('../../shared/constants');
+const { CAR_TYPES, CAR_CATEGORIES, CAR_STATUS, CAR_TRANSMISSIONS, CAR_FUEL_TYPES, CAR_CONDITIONS, SERVICE_CATEGORIES } = require('../../shared/constants');
 
 const carSchema = new mongoose.Schema(
   {
@@ -72,11 +72,13 @@ const carSchema = new mongoose.Schema(
     },
     transmission: {
       type: String,
-      enum: ['Automatic', 'Manual', 'CVT'],
+      enum: Object.values(CAR_TRANSMISSIONS),
+      default: CAR_TRANSMISSIONS.AUTOMATIC,
     },
     fuelType: {
       type: String,
-      enum: ['Petrol', 'Diesel', 'Hybrid', 'Electric', 'Gas'],
+      enum: Object.values(CAR_FUEL_TYPES),
+      default: CAR_FUEL_TYPES.PETROL,
     },
     color: {
       type: String,
@@ -84,7 +86,8 @@ const carSchema = new mongoose.Schema(
     },
     condition: {
       type: String,
-      trim: true,
+      enum: Object.values(CAR_CONDITIONS),
+      default: CAR_CONDITIONS.TOKUNBO,
     },
     seatingCapacity: {
       type: Number,

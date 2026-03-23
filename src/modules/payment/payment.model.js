@@ -41,7 +41,6 @@ const paymentSchema = new mongoose.Schema(
   }
 );
 
-paymentSchema.index({ reference: 1 });
 paymentSchema.index({ user: 1 });
 
 const Payment = mongoose.model('Payment', paymentSchema);

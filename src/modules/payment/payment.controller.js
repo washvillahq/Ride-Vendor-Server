@@ -14,8 +14,13 @@ const verifyPayment = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Payment verified successfully', paymentRecord);
 });
 
-// The webhook endpoint should ideally use raw parsers to accurately check crypto signatures,
-// but for this MVP, we acknowledge the payload and placeholder logic.
+const reInitializePayment = catchAsync(async (req, res) => {
+  const { type, relatedId } = req.body;
+  const paystackData = await paymentService.reInitializePayment(req.user._id, req.user.email, type, relatedId);
+  responseHelper(res, 200, 'Payment re-initialized successfully', paystackData);
+});
+
+// The webhook endpoint uses signature verification in the service
 const webhook = catchAsync(async (req, res) => {
   const signature = req.headers['x-paystack-signature'];
   await paymentService.handleWebhook(req.body, signature);
@@ -25,5 +30,6 @@ const webhook = catchAsync(async (req, res) => {
 module.exports = {
   initializePayment,
   verifyPayment,
+  reInitializePayment,
   webhook,
 };

@@ -13,7 +13,15 @@ const verifyPayment = {
   }),
 };
 
+const reInitializePayment = {
+  body: Joi.object().keys({
+    type: Joi.string().valid('booking', 'order').required(),
+    relatedId: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   initializePayment,
   verifyPayment,
+  reInitializePayment,
 };
