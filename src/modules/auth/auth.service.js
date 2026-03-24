@@ -23,7 +23,21 @@ const registerUser = async (userBody) => {
   if (await User.findOne({ email: userBody.email })) {
     throw new AppError(400, 'Email already in use');
   }
-  return User.create(userBody);
+
+  // Privilege Escalation Guard: Explicitly pick only allowed registration fields
+  const safeUserBody = {
+    name: userBody.name,
+    email: userBody.email,
+    password: userBody.password,
+    phone: userBody.phone,
+  };
+
+  const user = await User.create(safeUserBody);
+  
+  // Data Leakage Fix: Remove password before returning
+  user.password = undefined;
+  
+  return user;
 };
 
 /**
@@ -50,6 +64,9 @@ const loginUser = async (email, password) => {
 
   // 2) Generate token
   const token = generateToken(user._id);
+
+  // 3) Remove password from user object before returning
+  user.password = undefined;
 
   return { user, token };
 };

@@ -26,18 +26,20 @@ const createSendToken = (user, token, statusCode, res, message) => {
 };
 
 const register = catchAsync(async (req, res) => {
-  const userBody = { ...req.body }; // Create a mutable copy of req.body
-
-  if (process.env.ADMIN_EMAIL && userBody.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) {
-    userBody.role = ROLES.ADMIN; // Use ROLES.ADMIN for consistency
-  } else {
-    userBody.role = ROLES.USER; // Ensure standard users default to 'user'
-  }
+  // Defensive field picking to prevent mass assignment of 'role', 'isBlocked', etc.
+  const userBody = {
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    phone: req.body.phone,
+    role: ROLES.USER, // Explicitly force 'user' role for all self-registrations
+  };
 
   const user = await authService.registerUser(userBody);
   const token = authService.generateToken(user._id);
   createSendToken(user, token, 201, res, 'User registered successfully');
 });
+
 
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;

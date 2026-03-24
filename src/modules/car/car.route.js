@@ -42,14 +42,14 @@ router
 // Image management routes (Admin only)
 router
   .route('/:carId/images')
-  .post(upload.single('image'), carController.uploadImage);
+  .post(validate(carValidation.getCar), upload.single('image'), carController.uploadImage);
 
 router
   .route('/:carId/images/:imageId/primary')
-  .patch(carController.setPrimaryImage);
+  .patch(validate(carValidation.getCar), carController.setPrimaryImage);
 
 router
   .route('/:carId/images/:imageId')
-  .delete(carController.deleteImage);
+  .delete(validate(carValidation.getCar), carController.deleteImage);
 
 module.exports = router;

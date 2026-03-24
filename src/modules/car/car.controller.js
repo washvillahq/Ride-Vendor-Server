@@ -66,7 +66,12 @@ const getCar = catchAsync(async (req, res) => {
 });
 
 const updateCar = catchAsync(async (req, res) => {
-  const car = await carService.updateCarById(req.params.carId, req.body);
+  // Prevent mass assignment of sensitive fields like status, type, etc.
+  const forbiddenFields = ['status', 'type', 'owner', '_id', 'createdAt', 'updatedAt'];
+  const updateBody = { ...req.body };
+  forbiddenFields.forEach(field => delete updateBody[field]);
+
+  const car = await carService.updateCarById(req.params.carId, updateBody);
   responseHelper(res, 200, 'Car updated successfully', car);
 });
 

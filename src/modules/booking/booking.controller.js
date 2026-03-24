@@ -51,8 +51,19 @@ const getMyBookings = catchAsync(async (req, res) => {
 
 const checkAvailability = catchAsync(async (req, res) => {
   const { carId, startDate, endDate } = req.query;
-  const available = await bookingService.isCarAvailable(carId, startDate, endDate);
-  
+
+  // Build a proper dates array spanning the requested range
+  const dates = [];
+  const current = new Date(startDate);
+  const end = new Date(endDate);
+  current.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  while (current <= end) {
+    dates.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  const available = await bookingService.isCarAvailable(carId, dates);
   responseHelper(res, 200, 'Availability checked successfully', { available });
 });
 

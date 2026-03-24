@@ -76,8 +76,19 @@ const bookingSchema = new mongoose.Schema(
 );
 
 // Indexes
-bookingSchema.index({ car: 1, startDate: 1, endDate: 1, status: 1 });
 bookingSchema.index({ user: 1 });
+// Critical: Unique partial index to prevent double bookings (race conditions)
+// Only blocks dates for bookings that are not cancelled
+bookingSchema.index(
+  { car: 1, dates: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] } 
+    } 
+  }
+);
+bookingSchema.index({ car: 1, startDate: 1, endDate: 1, status: 1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 module.exports = Booking;

@@ -20,8 +20,8 @@ router
   .post(validate(bookingValidation.createBooking), bookingController.createBooking)
   .get(validate(bookingValidation.getBookings), bookingController.getBookings);
 
-router.get('/my', bookingController.getMyBookings);
-router.get('/my-bookings', bookingController.getMyBookings);
+router.get('/my', validate(bookingValidation.getBookings), bookingController.getMyBookings);
+router.get('/my-bookings', validate(bookingValidation.getBookings), bookingController.getMyBookings);
 
 router.patch(
   '/:bookingId/cancel',

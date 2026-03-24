@@ -22,12 +22,12 @@ const getUsers = catchAsync(async (req, res) => {
 });
 
 const blockUser = catchAsync(async (req, res) => {
-  const user = await adminService.toggleUserBlock(req.params.id, true);
+  const user = await adminService.toggleUserBlock(req.params.userId, true);
   responseHelper(res, 200, 'User blocked successfully', user);
 });
 
 const unblockUser = catchAsync(async (req, res) => {
-  const user = await adminService.toggleUserBlock(req.params.id, false);
+  const user = await adminService.toggleUserBlock(req.params.userId, false);
   responseHelper(res, 200, 'User unblocked successfully', user);
 });
 
@@ -39,7 +39,7 @@ const getBookings = catchAsync(async (req, res) => {
 });
 
 const updateBookingStatus = catchAsync(async (req, res) => {
-  const booking = await bookingService.updateBookingStatus(req.params.id, req.body.status);
+  const booking = await bookingService.updateBookingStatus(req.params.bookingId, req.body.status);
   responseHelper(res, 200, 'Booking status updated successfully', booking);
 });
 
@@ -51,7 +51,7 @@ const getOrders = catchAsync(async (req, res) => {
 });
 
 const updateOrderStatus = catchAsync(async (req, res) => {
-  const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
+  const order = await orderService.updateOrderStatus(req.params.orderId, req.body.status);
   responseHelper(res, 200, 'Order status updated successfully', order);
 });
 

@@ -73,17 +73,28 @@ const getOrderById = async (orderId, userId, userRole) => {
  * Update order status (Admin only)
  */
 const updateOrderStatus = async (orderId, status) => {
-  const order = await Order.findByIdAndUpdate(
-    orderId,
-    { $set: { status } },
-    { new: true, runValidators: true }
-  );
+  const order = await Order.findById(orderId);
   if (!order) throw new AppError(404, 'Order not found');
 
-  // If order is completed, mark car as sold automatically (Basic transaction capability)
+  // Simple State Machine Validation
+  const validTransitions = {
+    [ORDER_STATUS.PENDING]: [ORDER_STATUS.PROCESSING, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.PROCESSING]: [ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.COMPLETED]: [],
+    [ORDER_STATUS.CANCELLED]: [],
+  };
+
+  if (!validTransitions[order.status].includes(status)) {
+    throw new AppError(400, `Invalid status transition from ${order.status} to ${status}`);
+  }
+
+  // If order is completed, mark car as sold automatically
   if (status === ORDER_STATUS.COMPLETED) {
     await Car.findByIdAndUpdate(order.car, { status: CAR_STATUS.SOLD });
   }
+
+  order.status = status;
+  await order.save();
 
   return order;
 };

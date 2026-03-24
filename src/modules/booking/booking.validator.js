@@ -8,6 +8,8 @@ const createBooking = {
     dates: Joi.array().items(Joi.date().iso().min(new Date().setHours(0, 0, 0, 0))).min(1).required().messages({
       'array.min': 'Please select at least one date',
     }),
+
+
     services: Joi.array().items(Joi.string()), // array of service IDs
     pickupLocation: Joi.string(),
     dropoffLocation: Joi.string(),

@@ -3,6 +3,7 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const responseHelper = require('../../shared/utils/response');
 
 const { calculatePagination } = require('../../shared/utils/helpers');
+const { checkOwnership } = require('../../shared/middlewares/rbac');
 
 const getUsers = catchAsync(async (req, res) => {
   const { users, total } = await userService.queryUsers(req.query);
@@ -12,12 +13,23 @@ const getUsers = catchAsync(async (req, res) => {
 });
 
 const getUser = catchAsync(async (req, res) => {
+  checkOwnership(req.params.userId, req.user);
   const user = await userService.getUserById(req.params.userId);
   responseHelper(res, 200, 'User retrieved successfully', user);
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const user = await userService.updateUserById(req.params.userId, req.body);
+  checkOwnership(req.params.userId, req.user);
+  // Prevent mass assignment by picking only allowed fields
+  const allowedUpdates = ['name', 'phone', 'email'];
+  const updateBody = {};
+  Object.keys(req.body).forEach((key) => {
+    if (allowedUpdates.includes(key)) {
+      updateBody[key] = req.body[key];
+    }
+  });
+
+  const user = await userService.updateUserById(req.params.userId, updateBody);
   responseHelper(res, 200, 'User updated successfully', user);
 });
 

@@ -32,11 +32,11 @@ module.exports = {
   port: envVars?.PORT || 3000,
   clientUrl: envVars?.CLIENT_URL || 'http://localhost:5173',
   mongoose: {
-    url: envVars?.MONGODB_URI || 'mongodb://127.0.0.1:27017/ridevendor',
+    url: envVars?.MONGODB_URI,
     options: {},
   },
   jwt: {
-    secret: envVars?.JWT_SECRET || 'thisisasamplesecret',
+    secret: envVars?.JWT_SECRET,
     accessExpirationMinutes: envVars?.JWT_ACCESS_EXPIRATION_MINUTES || 30,
     cookieExpiresIn: envVars?.JWT_COOKIE_EXPIRES_IN || 30,
   },
@@ -49,11 +49,11 @@ module.exports = {
     secretKey: envVars?.PAYSTACK_SECRET_KEY,
   },
   security: {
-    corsOrigin: envVars?.CORS_ORIGIN,
-    rateLimitMax: envVars?.RATE_LIMIT_MAX,
-    cookieSecure: envVars?.COOKIE_SECURE,
+    corsOrigin: (envVars?.CORS_ORIGIN === '*' || !envVars?.CORS_ORIGIN) ? (envVars?.CLIENT_URL || 'http://localhost:5173') : envVars.CORS_ORIGIN,
+    rateLimitMax: envVars?.RATE_LIMIT_MAX || 100,
+    cookieSecure: envVars?.COOKIE_SECURE || false,
   },
   logging: {
-    level: envVars?.LOG_LEVEL,
+    level: envVars?.LOG_LEVEL || 'info',
   }
 };

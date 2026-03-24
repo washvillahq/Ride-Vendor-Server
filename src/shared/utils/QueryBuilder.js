@@ -17,8 +17,13 @@ class QueryBuilder {
     });
 
     // Advanced filtering (e.g. gte, gt, lte, lt)
+    // Strictly whitelist allowed operators to prevent NoSQL injection via JSON.parse
+    const allowedOperators = ['gte', 'gt', 'lte', 'lt', 'ne', 'in'];
     let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    queryStr = queryStr.replace(
+      new RegExp(`\\b(${allowedOperators.join('|')})\\b`, 'g'), 
+      (match) => `$${match}`
+    );
 
     this.modelQuery = this.modelQuery.find(JSON.parse(queryStr));
     return this;

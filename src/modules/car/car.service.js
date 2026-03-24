@@ -98,22 +98,29 @@ const deleteCarById = async (carId) => {
 const uploadCarImage = async (carId, fileBuffer) => {
   const car = await getCarById(carId);
   
-  // Optional max images rule (e.g. 10 images)
+  // 1. Max images rule (e.g. 10 images)
   if (car.images && car.images.length >= 10) {
     throw new AppError(400, 'Maximum of 10 images allowed per car');
   }
 
+  // 2. Upload to Cloudinary
   const result = await cloudinaryHelper.uploadImageBuffer(fileBuffer, `ridevendor/cars/${carId}`);
   
-  const isFirstImage = car.images.length === 0;
-  car.images.push({
-    url: result.secure_url,
-    public_id: result.public_id,
-    isPrimary: isFirstImage,
-  });
+  try {
+    const isFirstImage = car.images.length === 0;
+    car.images.push({
+      url: result.secure_url,
+      public_id: result.public_id,
+      isPrimary: isFirstImage,
+    });
 
-  await car.save();
-  return car;
+    await car.save();
+    return car;
+  } catch (error) {
+    // 3. CLEANUP: If DB save fails, delete the orphan image from Cloudinary
+    await cloudinaryHelper.deleteImage(result.public_id);
+    throw error;
+  }
 };
 
 /**

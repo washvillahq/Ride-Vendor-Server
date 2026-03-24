@@ -67,6 +67,7 @@ const ORDER_STATUS = {
   PROCESSING: 'processing',
   SHIPPED: 'shipped',
   DELIVERED: 'delivered',
+  COMPLETED: 'completed',
   CANCELLED: 'cancelled',
 };
 

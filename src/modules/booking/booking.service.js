@@ -13,15 +13,21 @@ const { calculateTotalDays, checkDateOverlap } = require('../../shared/utils/hel
  * @param {Date} endDate 
  * @returns {Promise<boolean>}
  */
-const isCarAvailable = async (carId, dates) => {
+const isCarAvailable = async (carId, dates, excludeBookingId = null) => {
   // Normalize input dates to start of day
   const normalizedRequestedDates = dates.map(d => new Date(new Date(d).setHours(0,0,0,0)).getTime());
 
   // Find only bookings that block availability
-  const existingBookings = await Booking.find({
+  const query = {
     car: carId,
-    status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
-  }).select('startDate endDate dates');
+    status: { $in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
+  };
+
+  if (excludeBookingId) {
+    query._id = { $ne: excludeBookingId };
+  }
+
+  const existingBookings = await Booking.find(query).select('startDate endDate dates');
 
   for (const booking of existingBookings) {
     // If the existing booking has discrete dates, check individual dates
@@ -67,26 +73,50 @@ const getCarAvailabilitySchedule = async (carId) => {
   // If rental car, get active blocking bookings
   const blockingBookings = await Booking.find({
     car: carId,
-    status: { $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
+    status: { $in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ACTIVE] },
     endDate: { $gte: new Date() } // Only care about current/future blocks
-  }).select('startDate endDate');
+  }).select('startDate endDate dates');
 
   const unavailableRanges = blockingBookings.map(b => ({
     startDate: b.startDate,
     endDate: b.endDate
   }));
 
-  // Check if available right now (meaning today is not inside an unavailable range)
-  const now = new Date();
-  const isAvailableNow = car.status === CAR_STATUS.AVAILABLE && !unavailableRanges.some(
-    range => now >= range.startDate && now <= range.endDate
-  );
+  // Collect all discrete booked dates to precisely disable them in the frontend calendar
+  const bookedDatesSet = new Set();
+  blockingBookings.forEach(booking => {
+    if (booking.dates && booking.dates.length > 0) {
+      booking.dates.forEach(d => {
+        const date = new Date(d);
+        date.setHours(0, 0, 0, 0);
+        bookedDatesSet.add(date.getTime());
+      });
+    } else {
+      // Fallback for range-based bookings: generate all intermediate dates
+      let current = new Date(booking.startDate);
+      const end = new Date(booking.endDate);
+      current.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      while (current <= end) {
+        bookedDatesSet.add(current.getTime());
+        current.setDate(current.getDate() + 1);
+      }
+    }
+  });
+
+  const bookedDates = Array.from(bookedDatesSet).map(time => new Date(time));
+
+  // Check if available right now (today)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isAvailableNow = car.status === CAR_STATUS.AVAILABLE && !bookedDatesSet.has(today.getTime());
 
   return {
     carId: car._id,
     carType: car.type,
     currentStatus: car.status,
     unavailableRanges,
+    bookedDates,
     isAvailableNow,
   };
 };
@@ -132,21 +162,27 @@ const createBooking = async (bookingData) => {
   const totalPrice = (basePricePerDay + finalServicePricePerDay) * totalDays;
 
   // 4. Create Booking
-  const booking = await Booking.create({
-    user,
-    car: carId,
-    services: finalServicesArray,
-    startDate,
-    endDate,
-    dates: requestedDates,
-    totalDays,
-    totalPrice,
-    pickupLocation,
-    dropoffLocation,
-    specialRequests,
-  });
-
-  return booking;
+  try {
+    const booking = await Booking.create({
+      user,
+      car: carId,
+      services: finalServicesArray,
+      startDate,
+      endDate,
+      dates: requestedDates,
+      totalDays,
+      totalPrice,
+      pickupLocation,
+      dropoffLocation,
+      specialRequests,
+    });
+    return booking;
+  } catch (error) {
+    if (error.code === 11000) {
+      throw new AppError(400, 'One or more of the selected dates have just been booked by someone else. Please try again.');
+    }
+    throw error;
+  }
 };
 
 /**
@@ -179,8 +215,8 @@ const cancelBooking = async (bookingId, userId, userRole) => {
     throw new AppError(403, 'You are not authorized to cancel this booking');
   }
 
-  // Cannot cancel completed or already cancelled
-  if ([BOOKING_STATUS.COMPLETED, BOOKING_STATUS.CANCELLED].includes(booking.status)) {
+  // Cannot cancel completed, active or already cancelled
+  if ([BOOKING_STATUS.COMPLETED, BOOKING_STATUS.CANCELLED, BOOKING_STATUS.ACTIVE].includes(booking.status)) {
     throw new AppError(400, `Cannot cancel a booking that is ${booking.status}`);
   }
 
@@ -191,12 +227,24 @@ const cancelBooking = async (bookingId, userId, userRole) => {
 };
 
 const updateBookingStatus = async (bookingId, status) => {
-  const booking = await Booking.findByIdAndUpdate(
-    bookingId, 
-    { $set: { status } },
-    { new: true, runValidators: true }
-  );
+  const booking = await Booking.findById(bookingId);
   if (!booking) throw new AppError(404, 'Booking not found');
+
+  // Simple State Machine Validation
+  const validTransitions = {
+    [BOOKING_STATUS.PENDING]: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.CANCELLED],
+    [BOOKING_STATUS.CONFIRMED]: [BOOKING_STATUS.ACTIVE, BOOKING_STATUS.CANCELLED],
+    [BOOKING_STATUS.ACTIVE]: [BOOKING_STATUS.COMPLETED, BOOKING_STATUS.CANCELLED],
+    [BOOKING_STATUS.COMPLETED]: [],
+    [BOOKING_STATUS.CANCELLED]: [],
+  };
+
+  if (!validTransitions[booking.status].includes(status)) {
+    throw new AppError(400, `Invalid status transition from ${booking.status} to ${status}`);
+  }
+
+  booking.status = status;
+  await booking.save();
   return booking;
 };
 

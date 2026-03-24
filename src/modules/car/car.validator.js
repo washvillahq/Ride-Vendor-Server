@@ -29,7 +29,7 @@ const createCar = {
     location: Joi.string().required(),
     description: Joi.string().required(),
     features: Joi.array().items(Joi.string()),
-    images: Joi.array().items(imageSchema).min(1).required(),
+    images: Joi.array().items(imageSchema).default([]),
     status: Joi.string().valid(...Object.values(CAR_STATUS)),
     mileage: Joi.number().min(0),
     engine: Joi.string(),
@@ -78,7 +78,7 @@ const getCar = {
 
 const updateCar = {
   params: Joi.object().keys({
-    carId: Joi.required(),
+    carId: Joi.string().required(),
   }),
   body: Joi.object()
     .keys({
@@ -111,7 +111,7 @@ const updateCar = {
 
 const updateCarStatus = {
   params: Joi.object().keys({
-    carId: Joi.required(),
+    carId: Joi.string().required(),
   }),
   body: Joi.object().keys({
     status: Joi.string().valid(...Object.values(CAR_STATUS)).required(),

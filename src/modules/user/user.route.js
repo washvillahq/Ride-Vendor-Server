@@ -8,18 +8,17 @@ const { ROLES } = require('../../shared/constants');
 
 const router = express.Router();
 
-// All user routes require authentication and admin role
+// Base Protection: All user routes require authentication
 router.use(protect);
-router.use(restrictTo(ROLES.ADMIN));
 
 router
   .route('/')
-  .get(validate(userValidation.getUsers), userController.getUsers);
+  .get(restrictTo(ROLES.ADMIN), validate(userValidation.getUsers), userController.getUsers);
 
 router
   .route('/:userId')
   .get(validate(userValidation.getUser), userController.getUser)
   .patch(validate(userValidation.updateUser), userController.updateUser)
-  .delete(validate(userValidation.deleteUser), userController.deleteUser);
+  .delete(restrictTo(ROLES.ADMIN), validate(userValidation.deleteUser), userController.deleteUser);
 
 module.exports = router;
