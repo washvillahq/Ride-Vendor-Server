@@ -10,6 +10,7 @@ const router = express.Router();
 
 // Publicly accessible utility endpoint for frontend to check availability dates
 router.get('/check-availability', validate(bookingValidation.checkAvailability), bookingController.checkAvailability);
+router.get('/:carId/availability', bookingController.getCarAvailabilitySchedule);
 
 // All other endpoints require authentication
 router.use(protect);
@@ -27,6 +28,12 @@ router.patch(
   '/:bookingId/cancel',
   validate(bookingValidation.cancelBooking),
   bookingController.cancelBooking
+);
+
+router.post(
+  '/:bookingId/extend',
+  validate(bookingValidation.extendBooking),
+  bookingController.extendBooking
 );
 
 // Admin-facing routes

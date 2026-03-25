@@ -100,6 +100,16 @@ const carSchema = new mongoose.Schema(
     suitcases: {
       type: Number,
       min: 0,
+      default: 0,
+    },
+    plateNumber: {
+      type: String,
+      trim: true,
+      select: false, // Hidden by default, only shown if explicitly selected or for admin/owner
+    },
+    climateControl: {
+      type: Boolean,
+      default: true,
     },
     createdBy: {
       type: mongoose.Schema.ObjectId,

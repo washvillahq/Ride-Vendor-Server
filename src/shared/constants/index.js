@@ -25,7 +25,8 @@ const CAR_CONDITIONS = {
 const SERVICE_CATEGORIES = {
   EXECUTIVE_VIP: 'Executive & VIP',
   WEDDING: 'Wedding Specials',
-  CORPORATE: 'Corporate',
+  CORPORATE: 'Corporate & Staff',
+  DAILY_AIRPORT: 'Daily & Airport',
 };
 
 const CAR_TRANSMISSIONS = {

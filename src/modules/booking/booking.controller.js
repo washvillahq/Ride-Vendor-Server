@@ -77,11 +77,32 @@ const updateBookingStatus = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Booking status updated successfully', booking);
 });
 
+const extendBooking = catchAsync(async (req, res) => {
+  const booking = await bookingService.extendBooking(req.params.bookingId, req.user._id, req.body.newDates);
+  
+  // Initialize payment for extension
+  const payment = await paymentService.initializePayment(
+    req.user._id,
+    req.user.email,
+    'booking',
+    booking._id
+  );
+
+  responseHelper(res, 200, 'Booking extension initiated', { booking, paymentUrl: payment.authorization_url });
+});
+
+const getCarAvailabilitySchedule = catchAsync(async (req, res) => {
+  const schedule = await bookingService.getCarAvailabilitySchedule(req.params.carId);
+  responseHelper(res, 200, 'Availability schedule retrieved', schedule);
+});
+
 module.exports = {
   createBooking,
   getBookings,
   getMyBookings,
   checkAvailability,
+  getCarAvailabilitySchedule,
   cancelBooking,
   updateBookingStatus,
+  extendBooking,
 };

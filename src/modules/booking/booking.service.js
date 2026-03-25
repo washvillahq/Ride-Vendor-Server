@@ -121,6 +121,8 @@ const getCarAvailabilitySchedule = async (carId) => {
   };
 };
 
+const generateHubCode = () => `RV-${Math.floor(1000 + Math.random() * 9000)}`;
+
 /**
  * Create a new booking
  * @param {Object} bookingData ({ user, carId, startDate, endDate, services: [] })
@@ -175,6 +177,7 @@ const createBooking = async (bookingData) => {
       pickupLocation,
       dropoffLocation,
       specialRequests,
+      hubAccessCode: generateHubCode(),
     });
     return booking;
   } catch (error) {
@@ -189,7 +192,7 @@ const createBooking = async (bookingData) => {
  * Get all bookings with filtering and pagination
  */
 const queryBookings = async (queryParams) => {
-  const bookingsQuery = new QueryBuilder(Booking.find().populate('car', 'title brand images').populate('user', 'name email'), queryParams)
+  const bookingsQuery = new QueryBuilder(Booking.find().populate('car', 'title brand model images plateNumber climateControl pricePerDay category').populate('user', 'name email'), queryParams)
     .filter()
     .sort()
     .select()
@@ -202,6 +205,12 @@ const queryBookings = async (queryParams) => {
 
   return { bookings, total };
 };
+
+const getBookingById = async (id) => {
+  const booking = await Booking.findById(id).populate('car').populate('user', 'name email phone');
+  if (!booking) throw new AppError(404, 'Booking not found');
+  return booking;
+}
 
 /**
  * Cancel a booking safely
@@ -220,11 +229,62 @@ const cancelBooking = async (bookingId, userId, userRole) => {
     throw new AppError(400, `Cannot cancel a booking that is ${booking.status}`);
   }
 
-  // In a real app with payments, we might trigger a refund checkout hit here before cancelling.
+  // Cancellation logic: within 48 hours of START date
+  const now = new Date();
+  const startDate = new Date(booking.startDate);
+  const diffInHours = (startDate - now) / (1000 * 60 * 60);
+
+  if (userRole !== 'admin' && diffInHours < 48) {
+    throw new AppError(400, 'Cancellations are only allowed up to 48 hours before the rental starts');
+  }
+
   booking.status = BOOKING_STATUS.CANCELLED;
   await booking.save();
   return booking;
 };
+
+const extendBooking = async (bookingId, userId, newDates) => {
+  const booking = await Booking.findById(bookingId).populate('car');
+  if (!booking) throw new AppError(404, 'Booking not found');
+
+  // Authorization
+  if (booking.user.toString() !== userId.toString()) {
+     throw new AppError(403, 'Unauthorized to extend this booking');
+  }
+
+  // Check availability for NEW dates only (excluding already booked dates in this booking)
+  const existingDatesSet = new Set(booking.dates.map(d => new Date(d).setHours(0,0,0,0)));
+  const genuinelyNewDates = newDates.filter(d => !existingDatesSet.has(new Date(d).setHours(0,0,0,0)));
+
+  if (genuinelyNewDates.length === 0) {
+     throw new AppError(400, 'No new dates provided for extension');
+  }
+
+  const available = await isCarAvailable(booking.car._id, genuinelyNewDates, booking._id);
+  if (!available) {
+     throw new AppError(400, 'Cannot extend: One or more of the new dates are already booked');
+  }
+
+  // Calculate extra cost
+  const car = booking.car;
+  let servicePricePerDay = 0;
+  if (booking.services && booking.services.length > 0) {
+     servicePricePerDay = booking.services.reduce((acc, s) => acc + (s.pricePerDay || 0), 0);
+  }
+  
+  const dailyRate = car.pricePerDay + servicePricePerDay;
+  const additionalCost = dailyRate * genuinelyNewDates.length;
+
+  // Update Booking
+  booking.dates = [...booking.dates, ...genuinelyNewDates].sort((a,b) => new Date(a) - new Date(b));
+  booking.startDate = booking.dates[0];
+  booking.endDate = booking.dates[booking.dates.length - 1];
+  booking.totalDays = booking.dates.length;
+  booking.totalPrice += additionalCost;
+
+  await booking.save();
+  return booking;
+}
 
 const updateBookingStatus = async (bookingId, status) => {
   const booking = await Booking.findById(bookingId);
@@ -252,7 +312,9 @@ module.exports = {
   createBooking,
   isCarAvailable,
   queryBookings,
+  getBookingById,
   cancelBooking,
   updateBookingStatus,
   getCarAvailabilitySchedule,
+  extendBooking,
 };

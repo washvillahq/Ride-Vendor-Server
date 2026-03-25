@@ -67,6 +67,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    hubAccessCode: {
+      type: String,
+      unique: true,
+    },
   },
   {
     timestamps: true,

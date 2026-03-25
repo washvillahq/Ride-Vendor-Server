@@ -40,6 +40,8 @@ const createCar = {
     seatingCapacity: Joi.number().min(1),
     doors: Joi.number().min(1),
     suitcases: Joi.number().min(0),
+    plateNumber: Joi.string().allow('', null),
+    climateControl: Joi.boolean().default(true),
   }),
 };
 
@@ -105,6 +107,8 @@ const updateCar = {
       seatingCapacity: Joi.number().min(1),
       doors: Joi.number().min(1),
       suitcases: Joi.number().min(0),
+      plateNumber: Joi.string().allow('', null),
+      climateControl: Joi.boolean(),
     })
     .min(1),
 };

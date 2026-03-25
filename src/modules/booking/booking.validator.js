@@ -58,6 +58,15 @@ const updateBookingStatus = {
   }),
 };
 
+const extendBooking = {
+  params: Joi.object().keys({
+    bookingId: Joi.string().custom(objectId).required(),
+  }),
+  body: Joi.object().keys({
+    newDates: Joi.array().items(Joi.date().iso()).min(1).required(),
+  }),
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -65,4 +74,5 @@ module.exports = {
   checkAvailability,
   cancelBooking,
   updateBookingStatus,
+  extendBooking,
 };
