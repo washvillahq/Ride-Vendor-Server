@@ -66,8 +66,8 @@ const getCar = catchAsync(async (req, res) => {
 });
 
 const updateCar = catchAsync(async (req, res) => {
-  // Prevent mass assignment of sensitive fields like status, type, etc.
-  const forbiddenFields = ['status', 'type', 'owner', '_id', 'createdAt', 'updatedAt'];
+  // Prevent mass assignment of sensitive fields like status, owner, etc.
+  const forbiddenFields = ['status', 'owner', '_id', 'createdAt', 'updatedAt'];
   const updateBody = { ...req.body };
   forbiddenFields.forEach(field => delete updateBody[field]);
 
