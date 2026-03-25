@@ -111,6 +111,10 @@ const carSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    serviceCategory: {
+      type: String,
+      enum: Object.values(SERVICE_CATEGORIES),
+    },
     createdBy: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',

@@ -13,45 +13,64 @@ const createCar = catchAsync(async (req, res) => {
 const getCars = catchAsync(async (req, res) => {
   const query = { ...req.query };
 
-  // Transform frontend-friendly filters to backend-supported QueryBuilder format
-  if (query.minPrice) {
+  // Price range filtering
+  if (query.minPrice || query.maxPrice) {
     const priceField = query.type === 'sale' ? 'salePrice' : 'pricePerDay';
-    query[`${priceField}[gte]`] = query.minPrice;
+    query[priceField] = {};
+    if (query.minPrice) query[priceField].gte = Number(query.minPrice);
+    if (query.maxPrice) query[priceField].lte = Number(query.maxPrice);
     delete query.minPrice;
-  }
-  if (query.maxPrice) {
-    const priceField = query.type === 'sale' ? 'salePrice' : 'pricePerDay';
-    query[`${priceField}[lte]`] = query.maxPrice;
     delete query.maxPrice;
   }
+
+  // Year range filtering
+  if (query.minYear || query.maxYear) {
+    query.year = {};
+    if (query.minYear) query.year.gte = Number(query.minYear);
+    if (query.maxYear) query.year.lte = Number(query.maxYear);
+    delete query.minYear;
+    delete query.maxYear;
+  }
+
+  // Mileage range filtering
+  if (query.minMileage || query.maxMileage) {
+    query.mileage = {};
+    if (query.minMileage) query.mileage.gte = Number(query.minMileage);
+    if (query.maxMileage) query.mileage.lte = Number(query.maxMileage);
+    delete query.minMileage;
+    delete query.maxMileage;
+  }
+
+  // Seating capacity filtering
+  if (query.minSeats) {
+    query.seatingCapacity = { gte: Number(query.minSeats) };
+    delete query.minSeats;
+  }
+
+  // Body Type to Category mapping
   if (query.bodyType) {
     query.category = query.bodyType;
     delete query.bodyType;
   }
+
+  // Transmission Normalization
   if (query.transmission) {
     if (query.transmission.toLowerCase().startsWith('auto')) {
       query.transmission = 'Automatic';
+    } else if (query.transmission.toLowerCase().startsWith('man')) {
+      query.transmission = 'Manual';
     }
   }
-  if (query.minYear) {
-    query['year[gte]'] = query.minYear;
-    delete query.minYear;
+
+  // Sort mapping (price -> pricePerDay/salePrice)
+  if (query.sort) {
+    const priceField = query.type === 'sale' ? 'salePrice' : 'pricePerDay';
+    query.sort = query.sort.replace('price', priceField);
   }
-  if (query.maxYear) {
-    query['year[lte]'] = query.maxYear;
-    delete query.maxYear;
-  }
-  if (query.minMileage) {
-    query['mileage[gte]'] = query.minMileage;
-    delete query.minMileage;
-  }
-  if (query.maxMileage) {
-    query['mileage[lte]'] = query.maxMileage;
-    delete query.maxMileage;
-  }
-  if (query.minSeats) {
-    query['seatingCapacity[gte]'] = query.minSeats;
-    delete query.minSeats;
+
+  // Ensure only available results are shown by default if no status filter is provided
+  if (!query.status) {
+    query.status = 'available';
   }
 
   const { cars, total } = await carService.queryCars(query);

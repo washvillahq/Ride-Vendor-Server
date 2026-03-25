@@ -27,6 +27,7 @@ const SERVICE_CATEGORIES = {
   WEDDING: 'Wedding Specials',
   CORPORATE: 'Corporate & Staff',
   DAILY_AIRPORT: 'Daily & Airport',
+  ECONOMY: 'Economy',
 };
 
 const CAR_TRANSMISSIONS = {
