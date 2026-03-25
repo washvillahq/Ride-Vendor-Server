@@ -5,7 +5,13 @@ const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
-    CLIENT_URL: Joi.string().default('http://localhost:5173').description('Frontend URL for CORS'),
+    CLIENT_URL: Joi.string()
+      .description('Frontend URL for CORS and redirects')
+      .when('NODE_ENV', {
+        is: 'production',
+        then: Joi.required(),
+        otherwise: Joi.string().default('http://localhost:5173')
+      }),
     MONGODB_URI: Joi.string().required().description('Mongo DB url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
@@ -30,7 +36,7 @@ if (error) {
 module.exports = {
   env: envVars?.NODE_ENV || 'development',
   port: envVars?.PORT || 3000,
-  clientUrl: envVars?.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: envVars?.CLIENT_URL,
   mongoose: {
     url: envVars?.MONGODB_URI,
     options: {},
