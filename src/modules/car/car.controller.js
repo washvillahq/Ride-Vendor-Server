@@ -56,7 +56,7 @@ const getCars = catchAsync(async (req, res) => {
 
   const { cars, total } = await carService.queryCars(query);
   const meta = calculatePagination(total, query.page || 1, query.limit || 10);
-  
+
   responseHelper(res, 200, 'Cars retrieved successfully', { pagination: meta, cars });
 });
 
