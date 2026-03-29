@@ -104,6 +104,15 @@ app.get('/api/health', (req, res) => {
   responseHelper(res, 200, 'Server is healthy and running!');
 });
 
+// Welcome route for root URL
+app.get('/', (req, res) => {
+  responseHelper(res, 200, 'Welcome to RideVendor API!', {
+    version: 'v1',
+    documentation: '/api/v1',
+    health: '/api/health',
+  });
+});
+
 // Send back a 404 error for any unknown API request
 app.all('*', (req, res, next) => {
   next(new AppError(404, `Can't find ${req.originalUrl} on this server!`));
