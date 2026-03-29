@@ -89,6 +89,7 @@ const bookingRoutes = require('./modules/booking/booking.route');
 const orderRoutes = require('./modules/order/order.route');
 const paymentRoutes = require('./modules/payment/payment.route');
 const adminRoutes = require('./modules/admin/admin.route');
+const cmsRoutes = require('./modules/cms/cms.route');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
@@ -98,6 +99,7 @@ app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/cms', cmsRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
