@@ -2,9 +2,104 @@ const QueryBuilder = require('../../shared/utils/QueryBuilder');
 const AppError = require('../../shared/utils/appError');
 const { Page, ContactSubmission, SeoSetting } = require('./cms.model');
 
-const createPage = async (payload) => Page.create(payload);
+const RESERVED_SLUGS = new Set([
+  'login',
+  'register',
+  'forgot-password',
+  'reset-password',
+  'dashboard',
+  'admin',
+  'api',
+  'cars',
+  'car-hire',
+  'car-sales',
+  'payment-success',
+  'unauthorized',
+]);
+
+const STATIC_PAGES = [
+  { slug: 'home', title: 'Home' },
+  { slug: 'about', title: 'About' },
+  { slug: 'services', title: 'Services' },
+  { slug: 'contact', title: 'Contact' },
+  { slug: 'shop', title: 'Shop' },
+];
+
+const SEO_EDITABLE_FIELDS = [
+  'metaTitle',
+  'metaDescription',
+  'focusKeyword',
+  'canonicalUrl',
+  'ogImage',
+  'robotsDirective',
+  'isPublished',
+  'status',
+  'title',
+];
+
+const normalizeSlug = (value = '') => value.toLowerCase().trim();
+
+const assertSlugAllowed = async (slug, ignoreId) => {
+  const normalizedSlug = normalizeSlug(slug);
+
+  if (!normalizedSlug) {
+    throw new AppError(400, 'Slug is required');
+  }
+
+  if (RESERVED_SLUGS.has(normalizedSlug)) {
+    throw new AppError(400, 'This slug is reserved and cannot be used');
+  }
+
+  const existing = await Page.findOne({ slug: normalizedSlug });
+  if (existing && String(existing._id) !== String(ignoreId || '')) {
+    throw new AppError(400, 'Slug already exists');
+  }
+
+  return normalizedSlug;
+};
+
+const ensureStaticPages = async () => {
+  const ops = STATIC_PAGES.map(({ slug, title }) => ({
+    updateOne: {
+      filter: { slug },
+      update: {
+        $setOnInsert: {
+          slug,
+          title,
+          status: 'published',
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+        $set: {
+          pageType: 'static',
+          isSystemPage: true,
+          contentLocked: true,
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  await Page.bulkWrite(ops);
+};
+
+const createPage = async (payload) => {
+  await ensureStaticPages();
+
+  const slug = await assertSlugAllowed(payload.slug);
+
+  return Page.create({
+    ...payload,
+    slug,
+    pageType: 'custom',
+    isSystemPage: false,
+    contentLocked: false,
+  });
+};
 
 const queryPages = async (queryParams, includeDrafts = false) => {
+  await ensureStaticPages();
+
   const filters = { ...queryParams };
   if (!includeDrafts) {
     filters.isPublished = true;
@@ -24,6 +119,8 @@ const queryPages = async (queryParams, includeDrafts = false) => {
 };
 
 const getPageBySlug = async (slug, includeDraft = false) => {
+  await ensureStaticPages();
+
   const query = { slug: slug.toLowerCase() };
   if (!includeDraft) {
     query.isPublished = true;
@@ -38,6 +135,8 @@ const getPageBySlug = async (slug, includeDraft = false) => {
 };
 
 const getPageById = async (id) => {
+  await ensureStaticPages();
+
   const page = await Page.findById(id);
   if (!page) {
     throw new AppError(404, 'Page not found');
@@ -47,6 +146,22 @@ const getPageById = async (id) => {
 
 const updatePageById = async (id, payload) => {
   const page = await getPageById(id);
+
+  if (payload.slug) {
+    payload.slug = await assertSlugAllowed(payload.slug, page._id);
+  }
+
+  if (page.pageType === 'static' || page.contentLocked) {
+    const nonSeoField = Object.keys(payload).find((key) => !SEO_EDITABLE_FIELDS.includes(key));
+    if (nonSeoField) {
+      throw new AppError(400, 'Static pages only allow SEO updates');
+    }
+  }
+
+  if (page.pageType === 'custom' && payload.slug) {
+    payload.slug = normalizeSlug(payload.slug);
+  }
+
   Object.assign(page, payload);
   await page.save();
   return page;
@@ -54,6 +169,9 @@ const updatePageById = async (id, payload) => {
 
 const deletePageById = async (id) => {
   const page = await getPageById(id);
+  if (page.isSystemPage || page.pageType === 'static') {
+    throw new AppError(400, 'Static system pages cannot be deleted');
+  }
   await page.deleteOne();
   return page;
 };
@@ -114,4 +232,5 @@ module.exports = {
   updateContactSubmissionById,
   getGlobalSeoSettings,
   updateGlobalSeoSettings,
+  ensureStaticPages,
 };

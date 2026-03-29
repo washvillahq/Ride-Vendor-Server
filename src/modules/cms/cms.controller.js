@@ -15,6 +15,12 @@ const getPages = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Pages retrieved successfully', { pagination: meta, pages });
 });
 
+const getPagesAdmin = catchAsync(async (req, res) => {
+  const { pages, total } = await cmsService.queryPages(req.query, true);
+  const meta = calculatePagination(total, req.query.page || 1, req.query.limit || 10);
+  responseHelper(res, 200, 'Admin pages retrieved successfully', { pagination: meta, pages });
+});
+
 const getPageBySlug = catchAsync(async (req, res) => {
   const includeDraft = Boolean(req.user && req.user.role === 'admin');
   const page = await cmsService.getPageBySlug(req.params.slug, includeDraft);
@@ -60,6 +66,7 @@ const updateGlobalSeoSettings = catchAsync(async (req, res) => {
 module.exports = {
   createPage,
   getPages,
+  getPagesAdmin,
   getPageBySlug,
   updatePage,
   deletePage,

@@ -26,6 +26,25 @@ const pageSectionSchema = new mongoose.Schema(
 
 const pageSchema = new mongoose.Schema(
   {
+    pageType: {
+      type: String,
+      enum: ['static', 'custom'],
+      default: 'custom',
+      required: true,
+    },
+    isSystemPage: {
+      type: Boolean,
+      default: false,
+    },
+    contentLocked: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ['draft', 'published'],
+      default: 'draft',
+    },
     slug: {
       type: String,
       required: true,
@@ -37,6 +56,10 @@ const pageSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    contentHtml: {
+      type: String,
+      default: '',
     },
     metaTitle: {
       type: String,
@@ -82,9 +105,17 @@ const pageSchema = new mongoose.Schema(
 );
 
 pageSchema.pre('save', function syncPublishedAt(next) {
+  if (this.isModified('status')) {
+    this.isPublished = this.status === 'published';
+  }
+
   if (this.isModified('isPublished')) {
+    this.status = this.isPublished ? 'published' : 'draft';
     this.publishedAt = this.isPublished ? new Date() : null;
   }
+
+  this.slug = this.slug?.toLowerCase?.().trim?.() || this.slug;
+
   next();
 });
 

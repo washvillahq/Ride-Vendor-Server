@@ -32,6 +32,10 @@ router
   .post(validate(cmsValidation.createPage), cmsController.createPage);
 
 router
+  .route('/admin/pages')
+  .get(validate(cmsValidation.getPages), cmsController.getPagesAdmin);
+
+router
   .route('/pages/id/:pageId')
   .patch(validate(cmsValidation.updatePage), cmsController.updatePage)
   .delete(validate(cmsValidation.deletePage), cmsController.deletePage);

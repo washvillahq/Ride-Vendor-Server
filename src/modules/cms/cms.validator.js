@@ -1,5 +1,10 @@
 const Joi = require('joi');
 
+const canonicalSchema = Joi.alternatives().try(
+  Joi.string().uri(),
+  Joi.string().pattern(/^\/[^\s]*$/)
+);
+
 const pageSectionSchema = Joi.object().keys({
   type: Joi.string().required(),
   title: Joi.string().allow('', null),
@@ -11,10 +16,11 @@ const createPage = {
   body: Joi.object().keys({
     slug: Joi.string().required(),
     title: Joi.string().required(),
+    contentHtml: Joi.string().allow('', null),
     metaTitle: Joi.string().allow('', null),
     metaDescription: Joi.string().allow('', null),
     focusKeyword: Joi.string().allow('', null),
-    canonicalUrl: Joi.string().uri().allow('', null),
+    canonicalUrl: canonicalSchema.allow('', null),
     ogImage: Joi.string().allow('', null),
     robotsDirective: Joi.string().valid('index,follow', 'noindex,follow', 'noindex,nofollow'),
     sections: Joi.array().items(pageSectionSchema),
@@ -24,7 +30,11 @@ const createPage = {
 
 const getPages = {
   query: Joi.object().keys({
+    _id: Joi.string().allow('', null),
     slug: Joi.string().allow('', null),
+    pageType: Joi.string().valid('static', 'custom').allow('', null),
+    status: Joi.string().valid('draft', 'published').allow('', null),
+    isSystemPage: Joi.boolean(),
     isPublished: Joi.boolean(),
     sort: Joi.string().allow('', null),
     limit: Joi.number().integer(),
@@ -47,10 +57,15 @@ const updatePage = {
     .keys({
       slug: Joi.string(),
       title: Joi.string(),
+      contentHtml: Joi.string().allow('', null),
+      pageType: Joi.string().valid('static', 'custom'),
+      isSystemPage: Joi.boolean(),
+      contentLocked: Joi.boolean(),
+      status: Joi.string().valid('draft', 'published'),
       metaTitle: Joi.string().allow('', null),
       metaDescription: Joi.string().allow('', null),
       focusKeyword: Joi.string().allow('', null),
-      canonicalUrl: Joi.string().uri().allow('', null),
+      canonicalUrl: canonicalSchema.allow('', null),
       ogImage: Joi.string().allow('', null),
       robotsDirective: Joi.string().valid('index,follow', 'noindex,follow', 'noindex,nofollow'),
       sections: Joi.array().items(pageSectionSchema),
