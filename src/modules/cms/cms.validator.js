@@ -97,6 +97,28 @@ const updateContactSubmission = {
     .min(1),
 };
 
+const getGlobalSeoSettings = {
+  query: Joi.object().keys({}),
+};
+
+const updateGlobalSeoSettings = {
+  body: Joi.object()
+    .keys({
+      siteName: Joi.string().allow('', null),
+      titleSuffix: Joi.string().allow('', null),
+      siteDescription: Joi.string().allow('', null),
+      siteUrl: Joi.string().uri().allow('', null),
+      defaultImage: Joi.string().allow('', null),
+      twitterHandle: Joi.string().allow('', null),
+      locale: Joi.string().allow('', null),
+      country: Joi.string().allow('', null),
+      organizationName: Joi.string().allow('', null),
+      organizationPhone: Joi.string().allow('', null),
+      organizationEmail: Joi.string().email().allow('', null),
+    })
+    .min(1),
+};
+
 module.exports = {
   createPage,
   getPages,
@@ -106,4 +128,6 @@ module.exports = {
   submitContact,
   getContactSubmissions,
   updateContactSubmission,
+  getGlobalSeoSettings,
+  updateGlobalSeoSettings,
 };

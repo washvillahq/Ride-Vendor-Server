@@ -1,6 +1,6 @@
 const QueryBuilder = require('../../shared/utils/QueryBuilder');
 const AppError = require('../../shared/utils/appError');
-const { Page, ContactSubmission } = require('./cms.model');
+const { Page, ContactSubmission, SeoSetting } = require('./cms.model');
 
 const createPage = async (payload) => Page.create(payload);
 
@@ -85,6 +85,23 @@ const updateContactSubmissionById = async (id, payload) => {
   return submission;
 };
 
+const getGlobalSeoSettings = async () => {
+  let settings = await SeoSetting.findOne({ key: 'global' });
+
+  if (!settings) {
+    settings = await SeoSetting.create({ key: 'global' });
+  }
+
+  return settings;
+};
+
+const updateGlobalSeoSettings = async (payload) => {
+  const settings = await getGlobalSeoSettings();
+  Object.assign(settings, payload);
+  await settings.save();
+  return settings;
+};
+
 module.exports = {
   createPage,
   queryPages,
@@ -95,4 +112,6 @@ module.exports = {
   createContactSubmission,
   queryContactSubmissions,
   updateContactSubmissionById,
+  getGlobalSeoSettings,
+  updateGlobalSeoSettings,
 };

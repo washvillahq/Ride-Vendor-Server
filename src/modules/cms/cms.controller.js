@@ -47,6 +47,16 @@ const updateContactSubmission = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Contact submission updated successfully', submission);
 });
 
+const getGlobalSeoSettings = catchAsync(async (req, res) => {
+  const settings = await cmsService.getGlobalSeoSettings();
+  responseHelper(res, 200, 'Global SEO settings retrieved successfully', settings);
+});
+
+const updateGlobalSeoSettings = catchAsync(async (req, res) => {
+  const settings = await cmsService.updateGlobalSeoSettings(req.body);
+  responseHelper(res, 200, 'Global SEO settings updated successfully', settings);
+});
+
 module.exports = {
   createPage,
   getPages,
@@ -56,4 +66,6 @@ module.exports = {
   submitContact,
   getContactSubmissions,
   updateContactSubmission,
+  getGlobalSeoSettings,
+  updateGlobalSeoSettings,
 };

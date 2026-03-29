@@ -20,6 +20,10 @@ router
   .route('/contact')
   .post(validate(cmsValidation.submitContact), cmsController.submitContact);
 
+router
+  .route('/seo-settings')
+  .get(validate(cmsValidation.getGlobalSeoSettings), cmsController.getGlobalSeoSettings);
+
 router.use(protect);
 router.use(restrictTo(ROLES.ADMIN));
 
@@ -39,5 +43,9 @@ router
 router
   .route('/contact/:submissionId')
   .patch(validate(cmsValidation.updateContactSubmission), cmsController.updateContactSubmission);
+
+router
+  .route('/seo-settings')
+  .patch(validate(cmsValidation.updateGlobalSeoSettings), cmsController.updateGlobalSeoSettings);
 
 module.exports = router;

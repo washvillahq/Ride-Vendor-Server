@@ -133,10 +133,84 @@ const contactSubmissionSchema = new mongoose.Schema(
 
 contactSubmissionSchema.index({ status: 1, createdAt: -1 });
 
+const seoSettingSchema = new mongoose.Schema(
+  {
+    key: {
+      type: String,
+      required: true,
+      unique: true,
+      default: 'global',
+      trim: true,
+      lowercase: true,
+    },
+    siteName: {
+      type: String,
+      trim: true,
+      default: 'RideVendor',
+    },
+    titleSuffix: {
+      type: String,
+      trim: true,
+      default: 'RideVendor',
+    },
+    siteDescription: {
+      type: String,
+      trim: true,
+      default:
+        'Car hire, car sales, and auto services in Ilorin, Kwara State. Trusted vehicle rentals, car sales, and logistics services for individuals and businesses.',
+    },
+    siteUrl: {
+      type: String,
+      trim: true,
+      default: 'https://ridevendor.com',
+    },
+    defaultImage: {
+      type: String,
+      trim: true,
+      default: '/og-default.png',
+    },
+    twitterHandle: {
+      type: String,
+      trim: true,
+      default: '@ridevendor',
+    },
+    locale: {
+      type: String,
+      trim: true,
+      default: 'en_US',
+    },
+    country: {
+      type: String,
+      trim: true,
+      default: 'NG',
+    },
+    organizationName: {
+      type: String,
+      trim: true,
+      default: 'RideVendor',
+    },
+    organizationPhone: {
+      type: String,
+      trim: true,
+      default: '+2348144123316',
+    },
+    organizationEmail: {
+      type: String,
+      trim: true,
+      default: 'info@ridevendor.com',
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 const Page = mongoose.model('Page', pageSchema);
 const ContactSubmission = mongoose.model('ContactSubmission', contactSubmissionSchema);
+const SeoSetting = mongoose.model('SeoSetting', seoSettingSchema);
 
 module.exports = {
   Page,
   ContactSubmission,
+  SeoSetting,
 };
