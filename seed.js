@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const User = require('./src/modules/user/user.model');
 const Car = require('./src/modules/car/car.model');
 const Service = require('./src/modules/service/service.model');
-const { CAR_TYPES, CAR_CATEGORIES, CAR_STATUS } = require('./src/shared/constants');
+const { CAR_TYPES, CAR_CATEGORIES, CAR_STATUS, CAR_FUEL_TYPES } = require('./src/shared/constants');
 
 const seedData = async () => {
   try {
@@ -54,7 +54,7 @@ const seedData = async () => {
         brand: 'Tesla',
         model: 'Model 3',
         year: 2023,
-        category: CAR_TYPES.ELECTRIC,
+        category: CAR_TYPES.SEDAN,
         type: CAR_CATEGORIES.RENTAL,
         pricePerDay: 120,
         location: 'Lagos, Nigeria',
@@ -166,7 +166,7 @@ const seedData = async () => {
         brand: 'Hyundai',
         model: 'Ioniq 5',
         year: 2023,
-        category: CAR_TYPES.ELECTRIC,
+        category: CAR_TYPES.CROSSOVER,
         type: CAR_CATEGORIES.RENTAL,
         pricePerDay: 130,
         location: 'Kano, Nigeria',

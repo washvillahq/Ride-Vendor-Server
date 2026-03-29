@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: ridevendor-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ridevendor_admin
+      MONGO_INITDB_ROOT_PASSWORD: admin_password_change_me
+      MONGO_INITDB_DATABASE: ridevendor
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ridevendor-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend API Server
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ridevendor-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      LOG_LEVEL: debug
+      MONGODB_URI: mongodb://ridevendor_admin:admin_password_change_me@mongodb:27017/ridevendor?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_ACCESS_EXPIRATION_MINUTES: 30
+      JWT_COOKIE_EXPIRES_IN: 30
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY}
+      PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY}
+      CLIENT_URL: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173
+      COOKIE_SECURE: false
+      RATE_LIMIT_MAX: 100
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - ridevendor-network
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  ridevendor-network:
+    driver: bridge
