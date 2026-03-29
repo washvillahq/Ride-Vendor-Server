@@ -78,8 +78,6 @@ pageSchema.pre('save', function syncPublishedAt(next) {
   next();
 });
 
-pageSchema.index({ slug: 1 });
-
 const contactSubmissionSchema = new mongoose.Schema(
   {
     name: {
