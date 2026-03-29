@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # MongoDB Database
   mongodb:
@@ -12,8 +14,6 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-    networks:
-      - ridevendor-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -21,46 +21,6 @@ services:
       retries: 5
       start_period: 10s
 
-  # Backend API Server
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ridevendor-server
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      LOG_LEVEL: debug
-      MONGODB_URI: mongodb://ridevendor_admin:admin_password_change_me@mongodb:27017/ridevendor?authSource=admin
-      CLIENT_URL: http://localhost:5173
-      CORS_ORIGIN: http://localhost:5173
-      COOKIE_SECURE: false
-      EMAIL_HOST: ${EMAIL_HOST:-smtp.mailtrap.io}
-      EMAIL_PORT: ${EMAIL_PORT:-2525}
-      EMAIL_SECURE: ${EMAIL_SECURE:-false}
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@ridevendor.com}
-      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-RideVendor}
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - ridevendor-network
-    command: npm run dev
-
 volumes:
   mongodb_data:
     driver: local
-
-networks:
-  ridevendor-network:
-    driver: bridge
