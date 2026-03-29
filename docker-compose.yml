@@ -21,6 +21,24 @@ services:
       retries: 5
       start_period: 10s
 
+  # MailPit - Email Testing Tool
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ridevendor-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # Web UI
+      - "1025:1025"   # SMTP server
+    volumes:
+      - mailpit_data:/data
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATA_FILE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
 volumes:
   mongodb_data:
+    driver: local
+  mailpit_data:
     driver: local
