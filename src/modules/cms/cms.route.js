@@ -5,6 +5,7 @@ const validate = require('../../shared/middlewares/validate');
 const { protect } = require('../../shared/middlewares/auth');
 const { restrictTo } = require('../../shared/middlewares/rbac');
 const { ROLES } = require('../../shared/constants');
+const upload = require('../../shared/middlewares/upload');
 
 const router = express.Router();
 
@@ -51,5 +52,9 @@ router
 router
   .route('/seo-settings')
   .patch(validate(cmsValidation.updateGlobalSeoSettings), cmsController.updateGlobalSeoSettings);
+
+router
+  .route('/upload-image')
+  .post(upload.single('image'), cmsController.uploadImage);
 
 module.exports = router;

@@ -2,6 +2,8 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const responseHelper = require('../../shared/utils/response');
 const { calculatePagination } = require('../../shared/utils/helpers');
 const blogService = require('./blog.service');
+const cloudinaryHelper = require('../../shared/utils/cloudinary');
+const AppError = require('../../shared/utils/appError');
 
 const createPost = catchAsync(async (req, res) => {
   const post = await blogService.createPost(req.body);
@@ -37,6 +39,18 @@ const deletePost = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Blog post deleted successfully');
 });
 
+const uploadImage = catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new AppError(400, 'No image file provided');
+  }
+
+  const result = await cloudinaryHelper.uploadImageBuffer(req.file.buffer, 'ridevendor/blog');
+  responseHelper(res, 200, 'Image uploaded successfully', {
+    url: result.secure_url,
+    publicId: result.public_id,
+  });
+});
+
 module.exports = {
   createPost,
   getPosts,
@@ -44,4 +58,5 @@ module.exports = {
   getPostBySlug,
   updatePost,
   deletePost,
+  uploadImage,
 };

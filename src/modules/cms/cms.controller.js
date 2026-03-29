@@ -2,6 +2,8 @@ const catchAsync = require('../../shared/utils/catchAsync');
 const responseHelper = require('../../shared/utils/response');
 const { calculatePagination } = require('../../shared/utils/helpers');
 const cmsService = require('./cms.service');
+const cloudinaryHelper = require('../../shared/utils/cloudinary');
+const AppError = require('../../shared/utils/appError');
 
 const createPage = catchAsync(async (req, res) => {
   const page = await cmsService.createPage(req.body);
@@ -63,6 +65,18 @@ const updateGlobalSeoSettings = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Global SEO settings updated successfully', settings);
 });
 
+const uploadImage = catchAsync(async (req, res) => {
+  if (!req.file) {
+    throw new AppError(400, 'No image file provided');
+  }
+
+  const result = await cloudinaryHelper.uploadImageBuffer(req.file.buffer, 'ridevendor/cms');
+  responseHelper(res, 200, 'Image uploaded successfully', {
+    url: result.secure_url,
+    publicId: result.public_id,
+  });
+});
+
 module.exports = {
   createPage,
   getPages,
@@ -75,4 +89,5 @@ module.exports = {
   updateContactSubmission,
   getGlobalSeoSettings,
   updateGlobalSeoSettings,
+  uploadImage,
 };
