@@ -46,6 +46,11 @@ const pageSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    focusKeyword: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     canonicalUrl: {
       type: String,
       trim: true,
@@ -53,6 +58,11 @@ const pageSchema = new mongoose.Schema(
     ogImage: {
       type: String,
       trim: true,
+    },
+    robotsDirective: {
+      type: String,
+      enum: ['index,follow', 'noindex,follow', 'noindex,nofollow'],
+      default: 'index,follow',
     },
     sections: {
       type: [pageSectionSchema],
