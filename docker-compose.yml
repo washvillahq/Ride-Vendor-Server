@@ -30,25 +30,18 @@ services:
       dockerfile: Dockerfile
     container_name: ridevendor-server
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
-      PORT: 5000
+      PORT: 3000
       LOG_LEVEL: debug
       MONGODB_URI: mongodb://ridevendor_admin:admin_password_change_me@mongodb:27017/ridevendor?authSource=admin
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      JWT_ACCESS_EXPIRATION_MINUTES: 30
-      JWT_COOKIE_EXPIRES_IN: 30
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-      PAYSTACK_SECRET_KEY: ${PAYSTACK_SECRET_KEY}
-      PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY}
       CLIENT_URL: http://localhost:5173
       CORS_ORIGIN: http://localhost:5173
       COOKIE_SECURE: false
-      RATE_LIMIT_MAX: 100
     ports:
-      - "5000:5000"
+      - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
