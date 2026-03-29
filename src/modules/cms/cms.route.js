@@ -57,4 +57,8 @@ router
   .route('/upload-image')
   .post(upload.single('image'), cmsController.uploadImage);
 
+router
+  .route('/static-seo-target')
+  .post(validate(cmsValidation.createStaticSeoTarget), cmsController.createStaticSeoTarget);
+
 module.exports = router;

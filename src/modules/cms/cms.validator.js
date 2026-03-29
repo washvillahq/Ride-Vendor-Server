@@ -134,6 +134,16 @@ const updateGlobalSeoSettings = {
     .min(1),
 };
 
+const createStaticSeoTarget = {
+  body: Joi.object().keys({
+    slug: Joi.string().pattern(/^[a-z0-9-]+$/).min(2).max(100).required()
+      .messages({
+        'string.pattern.base': 'Slug must contain only lowercase letters, numbers, and hyphens',
+      }),
+    title: Joi.string().min(1).max(200).required(),
+  }),
+};
+
 module.exports = {
   createPage,
   getPages,
@@ -145,4 +155,5 @@ module.exports = {
   updateContactSubmission,
   getGlobalSeoSettings,
   updateGlobalSeoSettings,
+  createStaticSeoTarget,
 };

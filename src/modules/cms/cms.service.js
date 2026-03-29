@@ -18,11 +18,18 @@ const RESERVED_SLUGS = new Set([
 ]);
 
 const STATIC_PAGES = [
-  { slug: 'home', title: 'Home' },
+  { 
+    slug: 'home', 
+    title: 'Home',
+    metaTitle: 'Car Hire, Car Sales & Auto Services in Ilorin',
+    metaDescription: 'Buy, hire, lease, and manage vehicles with ease. Ride Vendor provides trusted car hire, car sales, and logistics services for individuals and businesses in Ilorin.',
+  },
   { slug: 'about', title: 'About' },
   { slug: 'services', title: 'Services' },
   { slug: 'contact', title: 'Contact' },
   { slug: 'shop', title: 'Shop' },
+  { slug: 'car-sales', title: 'Car Sales' },
+  { slug: 'car-hire', title: 'Car Hire' },
 ];
 
 const SEO_EDITABLE_FIELDS = [
@@ -59,28 +66,63 @@ const assertSlugAllowed = async (slug, ignoreId) => {
 };
 
 const ensureStaticPages = async () => {
-  const ops = STATIC_PAGES.map(({ slug, title }) => ({
-    updateOne: {
-      filter: { slug },
-      update: {
-        $setOnInsert: {
-          slug,
-          title,
-          status: 'published',
-          isPublished: true,
-          publishedAt: new Date(),
+  const ops = STATIC_PAGES.map(({ slug, title, metaTitle, metaDescription }) => {
+    const setOnInsertFields = {
+      slug,
+      title,
+      status: 'published',
+      isPublished: true,
+      publishedAt: new Date(),
+    };
+    
+    if (metaTitle) {
+      setOnInsertFields.metaTitle = metaTitle;
+    }
+    if (metaDescription) {
+      setOnInsertFields.metaDescription = metaDescription;
+    }
+    
+    return {
+      updateOne: {
+        filter: { slug },
+        update: {
+          $setOnInsert: setOnInsertFields,
+          $set: {
+            pageType: 'static',
+            isSystemPage: true,
+            contentLocked: true,
+          },
         },
-        $set: {
-          pageType: 'static',
-          isSystemPage: true,
-          contentLocked: true,
-        },
+        upsert: true,
       },
-      upsert: true,
-    },
-  }));
+    };
+  });
 
   await Page.bulkWrite(ops);
+};
+
+const createStaticSeoTarget = async (slug, title) => {
+  const normalizedSlug = slug.toLowerCase().trim();
+  
+  if (!/^[a-z0-9-]+$/.test(normalizedSlug)) {
+    throw new AppError(400, 'Slug must contain only lowercase letters, numbers, and hyphens');
+  }
+  
+  const existing = await Page.findOne({ slug: normalizedSlug });
+  if (existing) {
+    throw new AppError(400, 'A page with this slug already exists');
+  }
+  
+  return Page.create({
+    slug: normalizedSlug,
+    title,
+    pageType: 'static',
+    isSystemPage: true,
+    contentLocked: true,
+    status: 'published',
+    isPublished: true,
+    publishedAt: new Date(),
+  });
 };
 
 const createPage = async (payload) => {
@@ -233,4 +275,5 @@ module.exports = {
   getGlobalSeoSettings,
   updateGlobalSeoSettings,
   ensureStaticPages,
+  createStaticSeoTarget,
 };

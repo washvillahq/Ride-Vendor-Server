@@ -77,6 +77,12 @@ const uploadImage = catchAsync(async (req, res) => {
   });
 });
 
+const createStaticSeoTarget = catchAsync(async (req, res) => {
+  const { slug, title } = req.body;
+  const page = await cmsService.createStaticSeoTarget(slug, title);
+  responseHelper(res, 201, 'Static SEO target created successfully', page);
+});
+
 module.exports = {
   createPage,
   getPages,
@@ -90,4 +96,5 @@ module.exports = {
   getGlobalSeoSettings,
   updateGlobalSeoSettings,
   uploadImage,
+  createStaticSeoTarget,
 };
