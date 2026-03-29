@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
@@ -40,6 +38,13 @@ services:
       CLIENT_URL: http://localhost:5173
       CORS_ORIGIN: http://localhost:5173
       COOKIE_SECURE: false
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.mailtrap.io}
+      EMAIL_PORT: ${EMAIL_PORT:-2525}
+      EMAIL_SECURE: ${EMAIL_SECURE:-false}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@ridevendor.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-RideVendor}
     ports:
       - "3000:3000"
     volumes:

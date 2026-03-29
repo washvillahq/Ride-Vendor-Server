@@ -68,10 +68,27 @@ const logout = catchAsync(async (req, res) => {
   responseHelper(res, 200, 'Logged out successfully');
 });
 
+const forgotPassword = catchAsync(async (req, res) => {
+  await authService.forgotPassword(req.body.email);
+  
+  responseHelper(res, 200, 'If that email address is registered, you will receive a password reset link shortly.');
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  
+  const newToken = await authService.resetPassword(token, password);
+  
+  responseHelper(res, 200, 'Password reset successfully', { token });
+});
+
 module.exports = {
   register,
   login,
   getMe,
   changePassword,
-  logout
+  logout,
+  forgotPassword,
+  resetPassword,
 };

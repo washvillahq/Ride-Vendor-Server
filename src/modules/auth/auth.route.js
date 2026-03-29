@@ -10,6 +10,10 @@ router.post('/register', validate(authValidation.register), authController.regis
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/logout', authController.logout);
 
+// Public password reset routes
+router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
+router.patch('/reset-password/:token', validate(authValidation.resetPassword), authController.resetPassword);
+
 // Protected routes
 router.use(protect); // Applies to all routes below this line
 router.get('/me', authController.getMe);
