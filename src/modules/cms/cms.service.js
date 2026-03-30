@@ -30,6 +30,9 @@ const STATIC_PAGES = [
   { slug: 'shop', title: 'Shop' },
   { slug: 'car-sales', title: 'Car Sales' },
   { slug: 'car-hire', title: 'Car Hire' },
+  { slug: 'blog', title: 'Blog' },
+  { slug: '404', title: 'Page Not Found' },
+  { slug: 'unauthorized', title: 'Unauthorized' },
 ];
 
 const SEO_EDITABLE_FIELDS = [
