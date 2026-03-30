@@ -17,6 +17,14 @@ const RESERVED_SLUGS = new Set([
   'unauthorized',
 ]);
 
+const CONTENT_MANAGED_SLUGS = new Set([
+  'about',
+  'privacy-policy',
+  'refund-policy',
+  'terms-and-conditions',
+  'cookie-policy',
+]);
+
 const STATIC_PAGES = [
   { 
     slug: 'home', 
@@ -33,6 +41,10 @@ const STATIC_PAGES = [
   { slug: 'blog', title: 'Blog' },
   { slug: '404', title: 'Page Not Found' },
   { slug: 'unauthorized', title: 'Unauthorized' },
+  { slug: 'privacy-policy', title: 'Privacy Policy' },
+  { slug: 'refund-policy', title: 'Refund Policy' },
+  { slug: 'terms-and-conditions', title: 'Terms and Conditions' },
+  { slug: 'cookie-policy', title: 'Cookie Policy' },
 ];
 
 const SEO_EDITABLE_FIELDS = [
@@ -45,6 +57,20 @@ const SEO_EDITABLE_FIELDS = [
   'isPublished',
   'status',
   'title',
+  'contentHtml',
+];
+
+const CONTENT_EDITABLE_FIELDS = [
+  'title',
+  'contentHtml',
+  'metaTitle',
+  'metaDescription',
+  'focusKeyword',
+  'canonicalUrl',
+  'ogImage',
+  'robotsDirective',
+  'isPublished',
+  'status',
 ];
 
 const normalizeSlug = (value = '') => value.toLowerCase().trim();
@@ -70,6 +96,7 @@ const assertSlugAllowed = async (slug, ignoreId) => {
 
 const ensureStaticPages = async () => {
   const ops = STATIC_PAGES.map(({ slug, title, metaTitle, metaDescription }) => {
+    const isContentManaged = CONTENT_MANAGED_SLUGS.has(slug);
     const setOnInsertFields = {
       slug,
       title,
@@ -93,7 +120,7 @@ const ensureStaticPages = async () => {
           $set: {
             pageType: 'static',
             isSystemPage: true,
-            contentLocked: true,
+            contentLocked: !isContentManaged,
           },
         },
         upsert: true,
@@ -196,10 +223,17 @@ const updatePageById = async (id, payload) => {
     payload.slug = await assertSlugAllowed(payload.slug, page._id);
   }
 
-  if (page.pageType === 'static' || page.contentLocked) {
-    const nonSeoField = Object.keys(payload).find((key) => !SEO_EDITABLE_FIELDS.includes(key));
-    if (nonSeoField) {
-      throw new AppError(400, 'Static pages only allow SEO updates');
+  if (page.pageType === 'static') {
+    if (page.contentLocked) {
+      const nonSeoField = Object.keys(payload).find((key) => !SEO_EDITABLE_FIELDS.includes(key));
+      if (nonSeoField) {
+        throw new AppError(400, 'Static pages only allow SEO updates');
+      }
+    } else {
+      const nonAllowedField = Object.keys(payload).find((key) => !CONTENT_EDITABLE_FIELDS.includes(key));
+      if (nonAllowedField) {
+        throw new AppError(400, 'Invalid field for this page type');
+      }
     }
   }
 
