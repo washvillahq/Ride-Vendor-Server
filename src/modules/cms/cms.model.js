@@ -87,6 +87,10 @@ const pageSchema = new mongoose.Schema(
       enum: ['index,follow', 'noindex,follow', 'noindex,nofollow'],
       default: 'index,follow',
     },
+    contentJson: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
     sections: {
       type: [pageSectionSchema],
       default: [],

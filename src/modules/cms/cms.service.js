@@ -25,6 +25,86 @@ const CONTENT_MANAGED_SLUGS = new Set([
   'cookie-policy',
 ]);
 
+const ABOUT_SEED_CONTENT_JSON = {
+  root: { props: {} },
+  content: [
+    {
+      type: 'Paragraph',
+      props: {
+        id: 'about-intro',
+        text: 'RideVendor is your trusted partner for car hire, car sales, and auto services in Ilorin, Kwara State. Since 2012, we have been providing reliable vehicle solutions for individuals and businesses.',
+        size: 'xl',
+      },
+    },
+    {
+      type: 'CardGrid',
+      props: {
+        id: 'about-mission-vision',
+        columns: '2',
+        cards: JSON.stringify([
+          {
+            title: 'Our Mission',
+            text: 'To provide reliable, affordable, and professional vehicle rental and sales services that exceed customer expectations.',
+          },
+          {
+            title: 'Our Vision',
+            text: 'To be the leading vehicle solutions provider in Nigeria, known for quality service and customer satisfaction.',
+          },
+        ]),
+      },
+    },
+    {
+      type: 'Checklist',
+      props: {
+        id: 'about-checklist',
+        title: 'Why Choose Us?',
+        items:
+          'Verified and inspected vehicles\nProfessional and experienced drivers\n24/7 customer support\nCompetitive pricing\nFlexible rental terms',
+      },
+    },
+    {
+      type: 'Heading',
+      props: { id: 'about-services-heading', text: 'Our Services', level: 'h2' },
+    },
+    {
+      type: 'CardGrid',
+      props: {
+        id: 'about-services-grid',
+        columns: '3',
+        cards: JSON.stringify([
+          {
+            title: 'Car Rental',
+            text: 'Daily, weekly, and monthly car hire options with free delivery in Ilorin.',
+          },
+          {
+            title: 'Car Sales',
+            text: 'Buy quality vehicles with verified inspection reports and transparent pricing.',
+          },
+          {
+            title: 'Auto Services',
+            text: 'Car washing, vehicle tracking, and comprehensive auto solutions.',
+          },
+        ]),
+      },
+    },
+    {
+      type: 'Heading',
+      props: { id: 'about-contact-heading', text: 'Contact Us', level: 'h2' },
+    },
+    {
+      type: 'ContactCard',
+      props: {
+        id: 'about-contact-card',
+        address:
+          'Oniyangi Complex, OFFA GARAGE RAILWAY LINE,\noff Asa-Dam Road, Ilorin 240101, Kwara',
+        phone: '+2348144123316',
+        email: 'info@ridevendor.com',
+      },
+    },
+  ],
+  zones: {},
+};
+
 const STATIC_PAGES = [
   { 
     slug: 'home', 
@@ -32,7 +112,7 @@ const STATIC_PAGES = [
     metaTitle: 'Car Hire, Car Sales & Auto Services in Ilorin',
     metaDescription: 'Buy, hire, lease, and manage vehicles with ease. Ride Vendor provides trusted car hire, car sales, and logistics services for individuals and businesses in Ilorin.',
   },
-  { slug: 'about', title: 'About' },
+  { slug: 'about', title: 'About', contentJson: ABOUT_SEED_CONTENT_JSON },
   { slug: 'services', title: 'Services' },
   { slug: 'contact', title: 'Contact' },
   { slug: 'shop', title: 'Shop' },
@@ -58,11 +138,13 @@ const SEO_EDITABLE_FIELDS = [
   'status',
   'title',
   'contentHtml',
+  'contentJson',
 ];
 
 const CONTENT_EDITABLE_FIELDS = [
   'title',
   'contentHtml',
+  'contentJson',
   'metaTitle',
   'metaDescription',
   'focusKeyword',
@@ -95,7 +177,7 @@ const assertSlugAllowed = async (slug, ignoreId) => {
 };
 
 const ensureStaticPages = async () => {
-  const ops = STATIC_PAGES.map(({ slug, title, metaTitle, metaDescription }) => {
+  const ops = STATIC_PAGES.map(({ slug, title, metaTitle, metaDescription, contentJson }) => {
     const isContentManaged = CONTENT_MANAGED_SLUGS.has(slug);
     const setOnInsertFields = {
       slug,
@@ -110,6 +192,9 @@ const ensureStaticPages = async () => {
     }
     if (metaDescription) {
       setOnInsertFields.metaDescription = metaDescription;
+    }
+    if (contentJson) {
+      setOnInsertFields.contentJson = contentJson;
     }
     
     return {
