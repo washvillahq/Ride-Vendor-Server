@@ -214,6 +214,21 @@ const ensureStaticPages = async () => {
   });
 
   await Page.bulkWrite(ops);
+
+  // Backfill contentJson for pages that were created before the seed was added.
+  // Only applies when contentJson is null/missing — does not overwrite existing editor content.
+  const backfillOps = STATIC_PAGES
+    .filter(({ contentJson }) => contentJson)
+    .map(({ slug, contentJson }) => ({
+      updateOne: {
+        filter: { slug, contentJson: null },
+        update: { $set: { contentJson } },
+      },
+    }));
+
+  if (backfillOps.length > 0) {
+    await Page.bulkWrite(backfillOps);
+  }
 };
 
 const createStaticSeoTarget = async (slug, title) => {
