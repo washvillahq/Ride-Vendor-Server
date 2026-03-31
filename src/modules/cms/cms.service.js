@@ -1,5 +1,6 @@
 const QueryBuilder = require('../../shared/utils/QueryBuilder');
 const AppError = require('../../shared/utils/appError');
+const cloudinaryHelper = require('../../shared/utils/cloudinary');
 const { Page, ContactSubmission, SeoSetting } = require('./cms.model');
 
 const RESERVED_SLUGS = new Set([
@@ -316,6 +317,19 @@ const getPageById = async (id) => {
   return page;
 };
 
+/**
+ * Extract the Cloudinary public ID from a full Cloudinary URL.
+ * E.g. "https://res.cloudinary.com/xxx/image/upload/v1234/ridevendor/cms/abc.png"
+ *      → "ridevendor/cms/abc"
+ * Returns null if the URL doesn't look like a Cloudinary upload URL.
+ */
+const extractCloudinaryPublicId = (url) => {
+  if (!url) return null;
+  // Match everything after /upload/v<digits>/ (with or without version segment)
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+  return match ? match[1] : null;
+};
+
 const updatePageById = async (id, payload) => {
   const page = await getPageById(id);
 
@@ -339,6 +353,14 @@ const updatePageById = async (id, payload) => {
 
   if (page.pageType === 'custom' && payload.slug) {
     payload.slug = normalizeSlug(payload.slug);
+  }
+
+  // Delete the old Cloudinary asset when ogImage is being changed (cleared or replaced).
+  if ('ogImage' in payload && payload.ogImage !== page.ogImage && page.ogImage) {
+    const publicId = extractCloudinaryPublicId(page.ogImage);
+    if (publicId) {
+      await cloudinaryHelper.deleteImage(publicId);
+    }
   }
 
   Object.assign(page, payload);
